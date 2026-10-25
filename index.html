@@ -52,7 +52,7 @@ aside .mood{color:var(--muted);margin:-8px 0 0;font-size:14px}
 .sw{width:18px;height:18px;border-radius:3px;border:1px solid rgba(0,0,0,.15);margin-top:2px}
 .specs .what{font-weight:600;font-size:14px}
 .specs .where{color:var(--muted);font-size:13px}
-.qty{font-family:var(--f-mono);font-size:12px;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.qty{display:none}
 .finish{display:flex;flex-direction:column;gap:4px;font-size:14px}
 .finish div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding-bottom:4px}
 .finish div span:first-child{color:var(--muted)}
@@ -83,6 +83,9 @@ aside .mood{color:var(--muted);margin:-8px 0 0;font-size:14px}
 .quote input:focus,.quote select:focus,.quote textarea:focus{outline:2px solid var(--accent);outline-offset:0}
 .form-msg{grid-column:1/-1;font-size:14px;margin:0}
 .foot{color:var(--muted);font-size:12.5px;max-width:90ch}
+.suppliers{display:flex;flex-wrap:wrap;gap:10px 30px;align-items:center;justify-content:center;padding:18px 22px;border-top:1px solid var(--line)}
+.sup-lab{font-size:.68rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#94a3b8}
+.sup-brand{font-weight:800;font-size:.84rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
 </style>
 
 <div class="wrap">
@@ -166,7 +169,8 @@ aside .mood{color:var(--muted);margin:-8px 0 0;font-size:14px}
     </form>
   </section>
 
-  <p class="foot">Concept visuals for client discussion, not shop drawings. Sample designs for inspiration. Tile and fixtures shown represent common stock items; exact products are picked with you before ordering. Quantities are wet-area wall tile to 84″ and the floor, with 10% waste, before cuts for niches or curbs. Henry General Construction LLC · Licensed NJ Home Improvement Contractor · HIC #13VH10251400 · <a href="tel:+19089022685" style="color:inherit">(908) 902-2685</a></p>
+  <div class="suppliers" aria-label="Our suppliers"><span class="sup-lab">Materials from</span><span class="sup-brand">Nemo Tile &amp; Stone</span><span class="sup-brand">H2 LLC</span><span class="sup-brand">Schluter-Systems</span></div>
+  <p class="foot">Concept visuals for client discussion, not shop drawings. Sample designs for inspiration. Tile shown is from Nemo Tile &amp; Stone and shower glass is custom cut by H2 LLC; exact products are picked with you before ordering. Henry General Construction LLC · Licensed NJ Home Improvement Contractor · HIC #13VH10251400 · <a href="tel:+19089022685" style="color:inherit">(908) 902-2685</a></p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -270,38 +274,38 @@ const STYLES={
   modern:{
     name:'Modern Marble', mood:'Clean and bright. Polished marble-look tile, a floating vanity and matte black trim. Keeps the tub.',
     wet:'tub', paint:'#efece6', trim:'#ffffff',
-    wallTile:{label:'White marble-look polished porcelain', size:'12×24, stacked', where:'Tub surround to 84″', sf:77, boxes:PICK, sw:'#f2f1ee',
-      tex:{pattern:'stack',tw:24,th:12,span:48,base:'#f2f1ee',grout:'#e2e0dc',groutIn:0.0625,vary:5,seed:11,veins:{count:22,color:'#9b9a98',width:1.4}}},
-    floorTile:{label:'Charcoal matte porcelain', size:'24×24', where:'Main floor', sf:31, boxes:PICK, sw:'#4a4b4d',
-      tex:{pattern:'grid',tw:24,th:24,span:48,base:'#4a4b4d',grout:'#3c3d3f',groutIn:0.0625,vary:8,seed:21,speckle:{n:1800,a:'#2f3032',b:'#646568',size:1.4}}},
-    accentTile:{label:'Matte black hex mosaic', size:'2″ hex on mesh sheet', where:'Niche back', sf:2, boxes:'1 sheet', sw:'#1f1f21',
-      tex:{pattern:'hex',tw:2,th:2,span:12,base:'#232325',grout:'#8a8a8c',groutIn:0.08,vary:8,seed:31}},
+    wallTile:{label:'Leon Calacatta Bamboo', size:'24×48 porcelain, Antique finish', where:'Tub surround to 84″', sf:77, boxes:'5 boxes @ 15.5 SF', sw:'#f1eee8',
+      tex:{pattern:'stack',tw:48,th:24,span:96,base:'#f1eee8',grout:'#e3ded6',groutIn:0.0625,vary:4,seed:11,veins:{count:16,color:'#b3a27f',width:1.6}}},
+    floorTile:{label:'Leon Grigio Etrusco', size:'24×24 porcelain', where:'Main floor', sf:31, boxes:'3 boxes @ 11.63 SF', sw:'#7d7a76',
+      tex:{pattern:'grid',tw:24,th:24,span:48,base:'#7d7a76',grout:'#6b6965',groutIn:0.0625,vary:8,seed:21,veins:{count:30,color:'#d8d4cd',width:1.4}}},
+    accentTile:{label:'Hex & Herringbone Seta Nera 1″ hex', size:'Natural stone mosaic, 12×12 sheet', where:'Niche back', sf:2, boxes:'1 sheet+', sw:'#2a2a2c',
+      tex:{pattern:'hex',tw:1,th:1,span:12,base:'#2c2c2e',grout:'#5a5a5c',groutIn:0.06,vary:10,seed:31}},
     vanity:{kind:'float',color:'#f4f2ee',wood:null,top:'#fafafa',w:30}, metal:'#1b1b1b', metalRough:0.45,
     enclosure:'glassPanel',
-    finish:[['Vanity','30″ floating, matte white'],['Top','White quartz, undermount sink'],['Tub','New 60″ soaking tub'],['Fixtures','Matte black'],['Glass','Fixed 30″ tub screen']]
+    finish:[['Vanity','30″ floating, matte white'],['Top','White quartz, undermount sink'],['Tub','New 60″ soaking tub'],['Fixtures','Matte black'],['Glass','Fixed 30″ tub screen, cut by H2 LLC']]
   },
   spa:{
     name:'Spa Shower', mood:'Tub out, 60″ walk-in shower in. Warm stone-look walls, wood-look floor, a niche and a teak bench.',
     wet:'shower', paint:'#c9cfbf', trim:'#f3efe7',
-    wallTile:{label:'Warm beige stone-look porcelain', size:'12×24 matte, 1/3 offset', where:'Shower walls to 84″', sf:77, boxes:PICK, sw:'#d3c6b1',
-      tex:{pattern:'brick',tw:24,th:12,span:48,base:'#d3c6b1',grout:'#c2b49c',groutIn:0.0625,vary:7,seed:41,speckle:{n:2600,a:'#ad9f87',b:'#e6dccb',size:1.6}}},
-    floorTile:{label:'Natural oak wood-look porcelain plank', size:'8×48', where:'Main floor', sf:31, boxes:PICK, sw:'#b8915f',
-      tex:{pattern:'brick',tw:48,th:8,span:96,base:'#b8915f',grout:'#8f6f48',groutIn:0.0625,vary:16,seed:51,grain:{n:500,color:'#6e4f2e'}}},
-    accentTile:{label:'Greige matte mosaic', size:'2×2 on mesh sheet', where:'Shower floor (sloped to drain)', sf:14, boxes:PICK, sw:'#c9bfae',
-      tex:{pattern:'grid',tw:2,th:2,span:12,base:'#c9bfae',grout:'#a99d89',groutIn:0.1,vary:12,seed:61}},
+    wallTile:{label:'Bryce Sable', size:'24×48 limestone-look porcelain, Matte-Pro', where:'Shower walls to 84″', sf:77, boxes:'SF only (box qty not in catalog)', sw:'#cdbfa8',
+      tex:{pattern:'brick',tw:48,th:24,span:96,base:'#cdbfa8',grout:'#bfb19a',groutIn:0.0625,vary:7,seed:41,speckle:{n:2600,a:'#a89a82',b:'#e4dac8',size:1.6}}},
+    floorTile:{label:'Bryce Champagne', size:'12×24 porcelain, C2 GRIP', where:'Main floor', sf:31, boxes:'SF only', sw:'#e2d8c6',
+      tex:{pattern:'brick',tw:24,th:12,span:48,base:'#e2d8c6',grout:'#cdbfa8',groutIn:0.125,vary:8,seed:51,speckle:{n:1500,a:'#bfae93',b:'#f2ebdf',size:1.4}}},
+    accentTile:{label:'Bryce chevron mosaic', size:'10×12-4/5 mosaic sheet', where:'Shower floor (sloped to drain)', sf:14, boxes:'SF only', sw:'#d8ccb6',
+      tex:{pattern:'herringbone',tw:1.5,th:4.5,span:12,base:'#d6c9b2',grout:'#b9ab93',groutIn:0.0625,vary:12,seed:61}},
     vanity:{kind:'float',color:'#b88c5e',wood:['#c09668','#8a6440'],top:'#f2eee6',w:30}, metal:'#b9b6b0', metalRough:0.3,
     enclosure:'glassShower',
-    finish:[['Vanity','30″ floating oak-look'],['Top','Quartz, undermount sink'],['Fixtures','Brushed nickel, rain head'],['Glass','Frameless panel + door'],['Paint','Soft sage, satin']]
+    finish:[['Vanity','30″ floating oak-look'],['Top','Quartz, undermount sink'],['Fixtures','Brushed nickel, rain head'],['Glass','Frameless panel + door, cut by H2 LLC'],['Waterproofing','Schluter-KERDI system'],['Paint','Soft sage, satin']]
   },
   classic:{
     name:'Transitional', mood:'Timeless and easy to clean. Stacked white subway, grey herringbone floor, navy shaker vanity with brass.',
     wet:'tub', paint:'#e9e6e0', trim:'#ffffff',
-    wallTile:{label:'White glossy ceramic subway', size:'3×12, stacked', where:'Tub surround to 84″', sf:77, boxes:PICK, sw:'#f7f7f5',
-      tex:{pattern:'stack',tw:12,th:3,span:36,base:'#f6f6f3',grout:'#d4d4d0',groutIn:0.0625,vary:6,seed:71}},
-    floorTile:{label:'Grey marble-look herringbone mosaic', size:'2×6 pieces on sheet', where:'Main floor', sf:31, boxes:PICK, sw:'#a9adb0',
-      tex:{pattern:'herringbone',tw:2,th:6,span:24,base:'#a9adb0',grout:'#d0d0cc',groutIn:0.0625,vary:14,seed:81,veins:{count:20,color:'#e6e6e2',width:1.0}}},
-    accentTile:{label:'White glossy ceramic subway', size:'3×12', where:'Vanity backsplash', sf:3, boxes:'from wall order', sw:'#f7f7f5',
-      tex:{pattern:'stack',tw:12,th:3,span:36,base:'#f6f6f3',grout:'#d4d4d0',groutIn:0.0625,vary:6,seed:72}},
+    wallTile:{label:'Leon Lilac White', size:'4×24 porcelain, stacked', where:'Tub surround to 84″', sf:77, boxes:'9 boxes @ 9.04 SF', sw:'#f4f2ee',
+      tex:{pattern:'stack',tw:24,th:4,span:48,base:'#f3f1ed',grout:'#d6d3cd',groutIn:0.0625,vary:5,seed:71,veins:{count:10,color:'#c9c2cf',width:1.0}}},
+    floorTile:{label:'Hex & Herringbone Grigio Cielo', size:'Large herringbone, natural stone (seal it)', where:'Main floor', sf:31, boxes:'SF only', sw:'#a9adb0',
+      tex:{pattern:'herringbone',tw:3,th:9,span:36,base:'#a9adb0',grout:'#d0d0cc',groutIn:0.0625,vary:14,seed:81,veins:{count:20,color:'#e6e6e2',width:1.0}}},
+    accentTile:{label:'Leon Lilac White', size:'4×24 porcelain', where:'Vanity backsplash 4″', sf:3, boxes:'from wall order', sw:'#f4f2ee',
+      tex:{pattern:'stack',tw:24,th:4,span:48,base:'#f3f1ed',grout:'#d6d3cd',groutIn:0.0625,vary:5,seed:72}},
     vanity:{kind:'shaker',color:'#26364f',wood:null,top:'#f5f3ef',w:30}, metal:'#b8924a', metalRough:0.35,
     enclosure:'curtain',
     finish:[['Vanity','30″ shaker, navy'],['Top','Carrara-look quartz'],['Tub','New 60″ alcove, apron front'],['Fixtures','Brushed brass, curved rod'],['Paint','Greige walls, white trim']]
