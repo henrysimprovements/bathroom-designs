@@ -336,8 +336,10 @@ function build(key){
   box(1,30,1,metal,SX-12,52,0.8); const hh=cyl(1.2,0.7,7,metal,SX-12,62,2.2); hh.rotation.x=0.3;
   cyl(3,3,0.8,metal,SX/2+4,44,0.5,32).rotation.x=Math.PI/2; box(0.8,0.8,5,metal,SX/2+4,44,2.6);
   // frameless glass: fixed front panel + door, and a return panel toward the tub
-  const glass=new THREE.MeshPhysicalMaterial({color:0xe8f3f2,metalness:0,roughness:0.05,transparent:true,opacity:0.18,side:THREE.DoubleSide});
-  const gp=(w,d,x,z)=>{ const g=box(w,80,d,glass,x,40.5,z); g.castShadow=false; };
+  const glass=new THREE.MeshPhysicalMaterial({color:0xcfe7e5,metalness:0.1,roughness:0.04,transparent:true,opacity:0.34,side:THREE.DoubleSide});
+  const edgeM=new THREE.LineBasicMaterial({color:0x9fc4c1});
+  // tinted glass with visible polished edges so the panels and door read clearly
+  const gp=(w,d,x,z)=>{ const g=box(w,80,d,glass,x,40.5,z); g.castShadow=false; g.add(new THREE.LineSegments(new THREE.EdgesGeometry(g.geometry),edgeM)); };
   gp(37,0.4,18.5,SZ); gp(27,0.4,SX-14.5,SZ+0.6); gp(0.4,SZ-1,SX,SZ/2-0.5);
   box(0.6,12,0.8,metal,SX-26,44,SZ+1.4);
   for(const [x,z] of [[0.6,SZ],[SX,0.6]]) for(const y of [10,70]) box(1.2,2.4,1.2,metal,x,y,z);
