@@ -382,11 +382,22 @@ function build(key){
   const nicheMat=std({map:texFor(accT,12,24),roughness:0.4});
   const NZ=W/2+16;
   if(!S.noNiche){
-  plane(12,24,nicheMat,V(0.25,54,NZ),Math.PI/2);
-  box(4,0.8,13,std({color:S.wallTile.tex.base,roughness:0.35}),2,42,NZ); // sill
-  box(4,0.8,13,std({color:S.wallTile.tex.base,roughness:0.35}),2,66,NZ);
-  box(4,24.8,0.6,std({color:S.wallTile.tex.base,roughness:0.35}),2,54,NZ-6.4);
-  box(4,24.8,0.6,std({color:S.wallTile.tex.base,roughness:0.35}),2,54,NZ+6.4);
+  // recessed niche: cut the opening out of the end-wall surfaces, then line a 3.5" pocket inside the stud bay
+  room.children.slice().forEach(m=>{
+    const g=m.geometry; if(!g||g.type!=='PlaneGeometry'||Math.abs(m.position.x)>0.5||Math.abs(m.rotation.y-Math.PI/2)>1e-3) return;
+    const w=g.parameters.width, h=g.parameters.height, px=m.position.z, py=m.position.y;
+    const x0=px-(NZ+6), x1=px-(NZ-6), y0=42-py, y1=66-py;
+    if(y0<-h/2||y1>h/2||x0<-w/2||x1>w/2) return;
+    const sh=new THREE.Shape(); sh.moveTo(-w/2,-h/2); sh.lineTo(w/2,-h/2); sh.lineTo(w/2,h/2); sh.lineTo(-w/2,h/2); sh.lineTo(-w/2,-h/2);
+    const hole=new THREE.Path(); hole.moveTo(x0,y0); hole.lineTo(x0,y1); hole.lineTo(x1,y1); hole.lineTo(x1,y0); hole.lineTo(x0,y0); sh.holes.push(hole);
+    const ng=new THREE.ShapeGeometry(sh), uv=ng.attributes.uv, p=ng.attributes.position;
+    for(let i=0;i<uv.count;i++) uv.setXY(i,p.getX(i)/w+0.5,p.getY(i)/h+0.5);
+    g.dispose(); m.geometry=ng;
+  });
+  plane(12,24,nicheMat,V(-3.5,54,NZ),Math.PI/2);            // back of the pocket
+  const nTrim=std({map:texFor(accT,12,12),roughness:0.35});
+  box(3.5,0.4,12.8,nTrim,-1.75,41.8,NZ); box(3.5,0.4,12.8,nTrim,-1.75,66.2,NZ);
+  box(3.5,24,0.4,nTrim,-1.75,54,NZ-6.2); box(3.5,24,0.4,nTrim,-1.75,54,NZ+6.2);
   }
 
   const metal=std({color:S.metal,metalness:0.85,roughness:S.metalRough});
