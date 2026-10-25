@@ -166,7 +166,7 @@ aside .mood{color:var(--muted);margin:-8px 0 0;font-size:14px}
     </form>
   </section>
 
-  <p class="foot">Concept visuals for client discussion, not shop drawings. Sample designs for inspiration. Tile and fixtures shown represent common stock items; exact products are picked with you before ordering. Quantities are wet-area wall tile to 84″ and the floor, with 10% waste, before cuts for niches or curbs. Henry General Construction LLC · Licensed NJ Home Improvement Contractor · HIC # [add number]</p>
+  <p class="foot">Concept visuals for client discussion, not shop drawings. Sample designs for inspiration. Tile and fixtures shown represent common stock items; exact products are picked with you before ordering. Quantities are wet-area wall tile to 84″ and the floor, with 10% waste, before cuts for niches or curbs. Henry General Construction LLC · Licensed NJ Home Improvement Contractor · HIC #13VH10251400 · <a href="tel:+19089022685" style="color:inherit">(908) 902-2685</a></p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -599,10 +599,10 @@ fm.addEventListener('submit',async e=>{
   e.preventDefault();
   const name=fm.name.value.trim(), phone=fm.phone.value.trim();
   if(!name||!phone){ msg.textContent='Please add your name and phone number so we can reach you.'; return; }
-  if(!LEAD_ENDPOINT){ msg.textContent='This form is not connected yet. Please call or email us directly.'; return; }
+  if(!LEAD_ENDPOINT){ msg.innerHTML='Thanks! To finish, call us at <a href="tel:+19089022685">(908) 902-2685</a> or send your request on our <a href="https://www.henrysimprovements.com/contact" target="_top">contact page</a>.'; return; }
   msg.textContent='Sending…';
   try{ const r=await fetch(LEAD_ENDPOINT,{method:'POST',body:new FormData(fm)}); if(!r.ok) throw 0; fm.reset(); msg.textContent='Thanks! We got your request and will call you within one business day.'; }
-  catch(_){ msg.textContent='Something went wrong sending the form. Please call or email us directly.'; }
+  catch(_){ msg.textContent='Something went wrong sending the form. Please call us at (908) 902-2685.'; }
 });
 
 let start='modern'; try{ const s=localStorage.getItem('blue-bath-style'); if(STYLES[s]) start=s; }catch(e){}
