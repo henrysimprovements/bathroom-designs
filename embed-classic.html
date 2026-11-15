@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bathroom Style Designer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;600;700;800;900&display=swap">
+<style>
+/* Henry's Improvements look: black, white line work, blueprint grid */
+:root{
+  --bg:#000000; --panel:#050608; --ink:#ffffff; --silver:#cbd5e1; --muted:#94a3b8;
+  --line:rgba(255,255,255,0.16); --line-2:rgba(255,255,255,0.10); --accent:#ffffff;
+  --f:'Fira Sans', Arial, sans-serif; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);margin:0;font-family:var(--f);-webkit-font-smoothing:antialiased;line-height:1.6}
+.dz{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#000}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line-2)}
+.style-btn{appearance:none;background:transparent;border:0;border-left:1px solid var(--line-2);color:var(--muted);cursor:pointer;padding:18px 10px;font:800 0.78rem var(--f);letter-spacing:.16em;text-transform:uppercase;transition:color .3s,background-color .3s}
+.style-btn:first-child{border-left:0}
+.style-btn:hover{color:#fff}
+.style-btn[aria-pressed="true"]{color:#000;background:#fff}
+.style-btn:focus-visible,.pill:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.mood{margin:0;padding:16px 22px;text-align:center;color:var(--silver);font-weight:300;font-size:.96rem;border-bottom:1px solid var(--line-2)}
+.stage{position:relative;aspect-ratio:16/10;width:100%;max-width:100%;overflow:hidden;
+  background:linear-gradient(rgba(255,255,255,0.045) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(255,255,255,0.045) 1px,transparent 1px) 0 0/28px 28px,radial-gradient(80% 90% at 50% 40%,#11161a,#050608 70%)}
+.stage canvas{display:block;width:100%!important;height:100%!important;touch-action:pan-y;cursor:grab}
+.plan-layer{position:absolute;inset:0;padding:18px;background:linear-gradient(rgba(255,255,255,0.045) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(255,255,255,0.045) 1px,transparent 1px) 0 0/28px 28px,#050608;display:grid;place-items:center}
+.plan-layer svg{width:100%;height:100%;display:block}
+.plan-layer svg text{font-family:var(--f);font-weight:700;fill:#fff}
+.badge{position:absolute;top:14px;left:14px;z-index:5;display:inline-flex;gap:8px;align-items:center;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);border-radius:50px;padding:7px 14px;font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+.badge b{font-weight:900}
+.mode{position:absolute;top:14px;right:14px;z-index:5;display:flex;border:1px solid rgba(255,255,255,.35);border-radius:50px;overflow:hidden;background:rgba(0,0,0,.6)}
+.views{position:absolute;left:14px;bottom:14px;z-index:5;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 28px)}
+.pill{appearance:none;border:0;background:transparent;color:#fff;font:700 .66rem var(--f);letter-spacing:.14em;text-transform:uppercase;padding:7px 13px;cursor:pointer}
+.views .pill{border:1px solid rgba(255,255,255,.3);border-radius:50px;background:rgba(0,0,0,.55)}
+.pill[aria-pressed="true"]{background:#fff!important;color:#000}
+.hint{display:none}
+.plan-layer[hidden],.views[hidden]{display:none!important}
+.specs-row{display:grid;grid-template-columns:1.25fr 1fr 1fr;border-top:1px solid var(--line-2)}
+.specs-row>div{padding:22px 22px 24px;border-left:1px solid var(--line-2);min-width:0}
+.specs-row>div:first-child{border-left:0}
+.lab{margin:0 0 12px;font-size:.7rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.specs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.specs li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;align-items:start}
+.sw{width:18px;height:18px;border-radius:3px;border:1px solid rgba(255,255,255,.35);margin-top:3px}
+.what{font-weight:600;font-size:.9rem;line-height:1.35}
+.where{color:var(--muted);font-size:.8rem;font-weight:300}
+.qty{display:none}
+.finish{display:flex;flex-direction:column;gap:6px;font-size:.86rem}
+.finish div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.finish div span:first-child{color:var(--muted);text-transform:uppercase;font-size:.68rem;letter-spacing:.14em;font-weight:700;padding-top:2px}
+.finish div span:last-child{text-align:right;font-weight:300}
+#s-code{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--silver);font-size:.86rem;font-weight:300}
+#plan-notes{display:none}
+.foot{margin:0;padding:14px 22px;border-top:1px solid var(--line-2);font-size:.74rem;color:rgba(148,163,184,.85);font-weight:300;text-align:center}
+@media (max-width:760px){
+  .style-btn{padding:15px 4px;font-size:.64rem;letter-spacing:.08em}
+  .stage{aspect-ratio:1/1}
+  .specs-row{grid-template-columns:minmax(0,1fr)}
+  .specs-row>div{border-left:0;border-top:1px solid var(--line-2)}
+  .specs-row>div:first-child{border-top:0}
+  .pill{font-size:.6rem;padding:6px 10px;letter-spacing:.08em}
+}
+/* customizer: 3D view with a selection panel beside it (stacked on smaller screens) */
+.app{display:grid;grid-template-columns:minmax(0,1fr) 380px}
+@media (min-width:901px){.app .stage{aspect-ratio:auto;height:640px}}
+.viewer{min-width:0;display:flex;flex-direction:column}
+.panel{position:relative;border-left:1px solid var(--line-2);background:#050608;min-height:420px}
+.panel-in{position:absolute;inset:0;display:flex;flex-direction:column}
+.p-head{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
+.p-head .lab{margin:0}
+.p-mix{font-size:.76rem;color:var(--silver);font-weight:300;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.reset{appearance:none;background:transparent;border:1px solid var(--line);color:#fff;border-radius:50px;font:700 .6rem var(--f);letter-spacing:.14em;text-transform:uppercase;padding:6px 11px;cursor:pointer}
+.reset[disabled]{opacity:.35;cursor:default}
+.cats{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px;border-bottom:1px solid var(--line-2)}
+.cat{appearance:none;flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--silver);border-radius:50px;padding:8px 13px;font:700 .62rem var(--f);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background-color .2s,color .2s}
+.cat:hover{color:#fff}
+.cat[aria-selected="true"]{background:#fff;color:#000;border-color:#fff}
+.cat:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.opts{flex:1;overflow-y:auto;padding:14px 16px 18px;overscroll-behavior:contain}
+.grp{margin:0 0 8px;font-size:.6rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.grp:not(:first-child){margin-top:18px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px}
+.card{appearance:none;position:relative;display:flex;flex-direction:column;gap:6px;text-align:left;background:transparent;border:0;padding:0;color:#fff;cursor:pointer;font-family:var(--f);min-width:0}
+.card .th{display:block;width:100%;aspect-ratio:1/1;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#0b0d10 center/cover no-repeat;transition:border-color .2s,box-shadow .2s;overflow:hidden}
+.card .th svg{width:100%;height:100%;display:block}
+.card .th.round{border-radius:50%;width:78%;margin:4px auto 0}
+.card .nm{font-size:.72rem;font-weight:600;line-height:1.25}
+.card .sub{font-size:.62rem;color:var(--muted);font-weight:300;line-height:1.3;margin-top:-4px}
+.card:hover .th{border-color:rgba(255,255,255,.55)}
+.card[aria-pressed="true"] .th{border-color:#fff;box-shadow:0 0 0 2px #fff}
+.card[aria-pressed="true"]::after{content:"";position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3'/%3E%3C/svg%3E") center/12px no-repeat}
+.card:focus-visible{outline:none}
+.card:focus-visible .th{box-shadow:0 0 0 3px #fff}
+.card .th{background-size:cover;background-position:center}
+.card .th[data-id]{opacity:.55;transition:opacity .3s,border-color .2s,box-shadow .2s}
+.card .th[data-id].in{opacity:1}
+.now{display:flex;gap:12px;align-items:center;padding:10px;margin:0 0 12px;border:1px solid var(--line-2);border-radius:12px;background:rgba(255,255,255,.03)}
+.now .th{width:52px;height:52px;flex:0 0 52px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:center/cover no-repeat}
+.now-k{display:block;font-size:.56rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.now-v{display:block;font-size:.84rem;font-weight:600;margin-top:2px}
+.now-s{display:block;font-size:.66rem;color:var(--muted);font-weight:300}
+.tools{position:sticky;top:-14px;z-index:2;background:#050608;padding:6px 0 10px;margin:0 0 4px}
+.search{width:100%;box-sizing:border-box;appearance:none;background:#0d0f12;border:1px solid var(--line);border-radius:50px;color:#fff;font:400 .78rem var(--f);padding:10px 16px;outline:none}
+.search::placeholder{color:var(--muted)}
+.search:focus{border-color:#fff}
+.looks{display:flex;flex-wrap:wrap;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px;scrollbar-width:none}
+.looks::-webkit-scrollbar{display:none}
+.look{appearance:none;flex:0 0 auto;border:1px solid var(--line-2);background:transparent;color:var(--silver);border-radius:50px;padding:6px 11px;font:600 .64rem var(--f);cursor:pointer;white-space:nowrap}
+.look[aria-pressed="true"]{border-color:#fff;color:#fff;background:rgba(255,255,255,.1)}
+.look:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.coll{margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--line-2)}
+.c-nm{margin:0;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.c-ct{font-size:.58rem;font-weight:700;color:var(--muted);border:1px solid var(--line-2);border-radius:50px;padding:1px 7px}
+.c-desc{margin:2px 0 0;font-size:.66rem;color:var(--muted);font-weight:300}
+.toast{position:absolute;left:50%;top:16px;z-index:5;transform:translate(-50%,-8px);opacity:0;pointer-events:none;background:rgba(255,255,255,.95);color:#000;font:600 .74rem var(--f);padding:9px 16px;border-radius:50px;box-shadow:0 6px 24px rgba(0,0,0,.4);transition:opacity .25s,transform .25s;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+.p-note{margin:16px 0 0;font-size:.68rem;color:var(--muted);font-weight:300;line-height:1.45}
+.picks-bar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:18px 22px;border-top:1px solid var(--line-2)}
+.btn{appearance:none;border:1px solid #fff;border-radius:50px;padding:0 24px;font:800 .7rem var(--f);letter-spacing:.16em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:46px}
+.btn.solid{background:#fff;color:#000}
+.btn.ghost{background:transparent;color:#fff}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .panel{border-left:0;border-top:1px solid var(--line-2);min-height:0}
+  .panel-in{position:static}
+  .opts{overflow-y:auto;max-height:640px}
+  /* stacked: 3D view, then the picks, then the camera buttons, so a pick and its result sit close together */
+  .viewer{display:contents}
+  .stage{order:1}.panel{order:2}.ctrl{order:3}
+  .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cards.strip{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 30px)/4.3);grid-template-columns:none;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:6px;scrollbar-width:thin}
+  .cards.strip .card{scroll-snap-align:start}
+}
+@media (max-width:600px){
+  .cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cards.strip{grid-auto-columns:calc((100% - 20px)/3.3)}
+  .now{padding:8px;margin-bottom:8px}.now .th{width:40px;height:40px;flex-basis:40px}.now-s{display:none}
+  .cat{padding:0 15px;min-height:40px}
+  .picks-bar .btn{flex:1 1 100%}
+}
+/* phone layout: controls sit in a bar under the 3D view instead of on top of it */
+.ctrl{display:none}
+@media (max-width:600px){
+  .style-btn{padding:14px 6px;font-size:.62rem;letter-spacing:.06em;line-height:1.3;white-space:normal}
+  .mood{padding:14px 18px;font-size:.9rem}
+  .stage .badge{display:none}
+  .ctrl{display:flex;flex-direction:column;gap:10px;padding:12px 14px 14px;border-top:1px solid var(--line-2);background:#000}
+  .ctrl .mode,.ctrl .views{position:static;max-width:none;width:100%}
+  .ctrl .mode{display:grid;grid-template-columns:1fr 1fr}
+  .ctrl .views{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ctrl .pill{font-size:.68rem;letter-spacing:.1em;padding:0 8px;min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .ctrl .mode .pill[aria-pressed="true"]{background:#fff;color:#000}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.suppliers{display:flex;flex-wrap:wrap;gap:10px 30px;align-items:center;justify-content:center;padding:18px 22px;border-top:1px solid rgba(255,255,255,0.10)}
+.sup-lab{font-size:.68rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#94a3b8}
+.brand{font-weight:800;font-size:.84rem;letter-spacing:.14em;text-transform:uppercase;color:#fff}
+</style>
+</head><body>
+<div class="dz" id="dz">
+  <div class="tabs" role="group" aria-label="Choose a style">
+    <button class="style-btn" id="btn-modern" data-style="modern" aria-pressed="true">Modern Marble</button>
+    <button class="style-btn" id="btn-spa" data-style="spa" aria-pressed="false">Spa Retreat</button>
+    <button class="style-btn" id="btn-classic" data-style="classic" aria-pressed="false">Transitional</button>
+  </div>
+  <p class="mood" id="s-mood"></p>
+  <div class="app">
+  <div class="viewer">
+  <div class="stage" id="stage">
+    <div class="badge"><b>12′×14′</b> <span id="s-name">Modern Marble</span></div>
+    <div class="mode" role="group" aria-label="View mode">
+      <button class="pill" id="m-3d" aria-pressed="true">3D</button>
+      <button class="pill" id="m-plan" aria-pressed="false">Floor plan</button>
+    </div>
+    <div class="views" id="views" role="group" aria-label="Camera views">
+      <button class="pill" id="v-over" data-view="over" aria-pressed="true">Overview</button>
+      <button class="pill" id="v-door" data-view="door" aria-pressed="false">Doorway</button>
+      <button class="pill" id="v-wet" data-view="wet" aria-pressed="false">Tub / shower</button>
+      <button class="pill" id="v-plan" data-view="plan" aria-pressed="false">Top down</button>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="plan-layer" id="plan-layer" hidden><svg id="plan-svg" viewBox="-46 -50 262 250" role="img" aria-label="Dimensioned floor plan"></svg></div>
+  </div>
+  <div class="ctrl" id="ctrl" role="group" aria-label="View controls"></div>
+  </div>
+  <aside class="panel" aria-label="Customize your bathroom">
+    <div class="panel-in">
+      <div class="p-head"><p class="lab">Customize</p><span class="p-mix" id="p-mix"></span><button class="reset" id="p-reset" disabled>Reset</button></div>
+      <div class="cats" role="tablist" aria-label="What to change" id="cats"></div>
+      <div class="opts" id="opts" role="tabpanel"></div>
+    </div>
+  </aside>
+  </div>
+  <div class="specs-row">
+    <div><p class="lab">Tile</p><ul class="specs" id="s-tile"></ul></div>
+    <div><p class="lab">Fixtures &amp; finishes</p><div class="finish" id="s-finish"></div></div>
+    <div><p class="lab">What we handle</p><ul id="s-code"></ul><ul id="plan-notes"></ul></div>
+  </div>
+  <div class="picks-bar"><a class="btn solid" href="https://www.henrysimprovements.com/contact" target="_top" id="p-quote">Get a quote for this design</a><button class="btn ghost" id="p-copy">Copy my selections</button></div>
+  <div class="suppliers" aria-label="Our suppliers"><span class="sup-lab">Materials from</span><span class="brand">Nemo Tile &amp; Stone</span><span class="brand">H2 LLC</span><span class="brand">Schluter-Systems</span></div>
+  <p class="foot">Sample 12′×14′ primary bath. Colors on screen are close, not exact, so see the real samples before you order. Your design is drawn to your room's real measurements.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+const stage = document.getElementById('stage');
+if(!window.THREE){ stage.insertAdjacentHTML('beforeend','<div class="err">The 3D viewer could not load. Check your connection and reload the page.</div>'); return; }
+
+/* ---------- Room in inches: x = 168 (length, 14′), z = 144 (width, 12′), y = 108 (9′ ceiling) ---------- */
+const L=168, W=144, H=108;
+
+/* ---------- Seeded random so textures stay the same between loads ---------- */
+function rng(seed){ let s=seed>>>0; return ()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; }; }
+function hex2rgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function shade(h,amt){ const [r,g,b]=hex2rgb(h); const f=v=>Math.max(0,Math.min(255,Math.round(v+amt))); return `rgb(${f(r)},${f(g)},${f(b)})`; }
+
+/* Each texture canvas represents `span` inches square; repeat set from surface size. */
+const PX=1024;
+function makeTex(opts,px){
+  const P=px||PX;
+  const c=document.createElement('canvas'); c.width=c.height=P; const g=c.getContext('2d');
+  const r=rng(opts.seed||7); const s=P/opts.span, k=P/PX;
+  g.fillStyle=opts.grout; g.fillRect(0,0,P,P);
+  const gw=Math.max(1.5,(opts.groutIn||0.125)*s);
+  const fillPiece=(path)=>{ g.save(); path(); g.clip(); g.fillStyle=shade(opts.base,(r()-0.5)*(opts.vary||10)); g.fillRect(0,0,P,P); g.restore(); };
+  const rect=(x,y,w,h)=>fillPiece(()=>{ g.beginPath(); g.rect(x*s+gw/2,y*s+gw/2,w*s-gw,h*s-gw); });
+  const p=opts.pattern;
+  if(p==='grid'||p==='brick'||p==='stack'){
+    const tw=opts.tw, th=opts.th;
+    for(let row=0,y=0;y<opts.span;row++,y+=th){
+      const off=(p==='brick'&&row%2)?tw/2:0;
+      for(let x=-off;x<opts.span;x+=tw){ rect(x,y,tw,th);
+        if(opts.slot){ g.fillStyle=shade(opts.base,-16); g.fillRect((x+tw*0.3)*s,(y+th*0.18)*s,tw*0.4*s,th*0.64*s); g.fillStyle=shade(opts.base,10); g.fillRect((x+tw*0.3)*s,(y+th*0.82)*s-Math.max(1,2*k),tw*0.4*s,Math.max(1,2*k)); } }
+    }
+  } else if(p==='herringbone'){
+    const a=opts.tw, Lp=opts.th; // a = width, Lp = length
+    g.save(); g.translate(P/2,P/2); g.rotate(Math.PI/4); g.translate(-P,-P);
+    const S2=opts.span*2.2;
+    for(let k=-60;k<60;k++) for(let m=-12;m<12;m++){
+      const ox=m*Lp, oy=-m*Lp;
+      const hx=k*a+ox, hy=k*a+oy;
+      if(hx<-Lp||hx>S2+Lp||hy<-Lp||hy>S2+Lp) continue;
+      rect(hx,hy,Lp,a); rect(hx-a,hy,a,Lp);
+    }
+    g.restore();
+  } else if(p==='hex'){
+    const R=opts.tw/2, hh=Math.sqrt(3)*R;
+    for(let col=0,x=0;x<opts.span+R*2;col++,x+=1.5*R){
+      for(let y=(col%2?hh/2:0)-hh;y<opts.span+hh;y+=hh){
+        fillPiece(()=>{ g.beginPath(); for(let i=0;i<6;i++){ const ang=Math.PI/3*i; const rr=R*s-gw/2; g.lineTo(x*s+Math.cos(ang)*rr,y*s+Math.sin(ang)*rr);} g.closePath(); });
+      }
+    }
+  }
+  // veining / speckle on top of the pieces, leaving grout lines visible
+  if(opts.veins){
+    g.save(); g.globalCompositeOperation='source-atop'; g.lineCap='round'; g.lineJoin='round';
+    const dir=r()*Math.PI;
+    for(let i=0;i<opts.veins.count;i++){
+      const pts=[]; let x=r()*P, y=r()*P, ang=dir+(r()-0.5)*0.9; pts.push([x,y]);
+      for(let j=0;j<9;j++){ ang+=(r()-0.5)*0.7; const st=P*(0.05+r()*0.09); x+=Math.cos(ang)*st; y+=Math.sin(ang)*st; pts.push([x,y]); }
+      const path=()=>{ g.beginPath(); g.moveTo(pts[0][0],pts[0][1]); for(let j=1;j<pts.length-1;j++){ const mx=(pts[j][0]+pts[j+1][0])/2, my=(pts[j][1]+pts[j+1][1])/2; g.quadraticCurveTo(pts[j][0],pts[j][1],mx,my); } g.stroke(); };
+      const al=0.25+r()*0.45, w=(0.5+r()*opts.veins.width)*Math.max(k,0.4);
+      g.strokeStyle=opts.veins.color; g.globalAlpha=al*0.16; g.lineWidth=w*6; path();
+      g.globalAlpha=al; g.lineWidth=w; path();
+    }
+    g.restore();
+  }
+  if(opts.grain){
+    g.save(); g.globalCompositeOperation='source-atop';
+    for(let i=0;i<opts.grain.n;i++){ g.strokeStyle=opts.grain.color; g.globalAlpha=(opts.grain.soft?0.03:0.06)+r()*(opts.grain.soft?0.08:0.2); g.lineWidth=0.6+r()*2; g.beginPath(); let y=r()*P; g.moveTo(0,y); for(let x=0;x<=P;x+=40){ y+=(r()-0.5)*5; g.lineTo(x,y);} g.stroke(); }
+    g.restore();
+  }
+  if(opts.speckle){
+    const sn=Math.max(60,Math.round(opts.speckle.n*k*k)); for(let i=0;i<sn;i++){ g.globalAlpha=0.08+r()*0.18; g.fillStyle=r()>0.5?opts.speckle.a:opts.speckle.b; const rr=(0.5+r()*opts.speckle.size)*Math.max(k,0.35); g.beginPath(); g.arc(r()*P,r()*P,rr,0,7); g.fill(); }
+    g.globalAlpha=1;
+  }
+  // regrout lines on top so speckle doesn't cover joints in grids
+  if(px) return c;
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=8; t.encoding=THREE.sRGBEncoding;
+  t.userData={span:opts.span}; return t;
+}
+function woodTex(base,dark,seed){
+  const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); const r=rng(seed);
+  g.fillStyle=base; g.fillRect(0,0,512,512);
+  for(let i=0;i<140;i++){ g.strokeStyle=dark; g.globalAlpha=0.05+r()*0.18; g.lineWidth=0.5+r()*2.5; g.beginPath(); let y=r()*512; g.moveTo(0,y); for(let x=0;x<=512;x+=32){ y+= (r()-0.5)*6; g.lineTo(x,y);} g.stroke(); }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.encoding=THREE.sRGBEncoding; return t;
+}
+function texFor(tex,w,h){ const t=tex.clone(); t.needsUpdate=true; t.repeat.set(w/tex.userData.span,h/tex.userData.span); return t; }
+
+/* ---------- Tile from Nemo Tile & Stone (collections, colors and sizes from the Nemo catalogs) ---------- */
+/* Each collection lists its colors and which sizes go on walls, the main floor and the shower floor.
+   Colors are drawn to look close to the real tile; boxSF = coverage per box when the catalog lists it. */
+const FMT={
+  '24x48':{l:'24×48',p:'stack',tw:48,th:24,span:96}, '24x48b':{l:'24×48, offset',p:'brick',tw:48,th:24,span:96},
+  '48x48':{l:'48×48',p:'grid',tw:48,th:48,span:96}, '32x32':{l:'32×32',p:'grid',tw:32,th:32,span:64},
+  '24x24':{l:'24×24',p:'grid',tw:24,th:24,span:48}, '12x24':{l:'12×24, offset',p:'brick',tw:24,th:12,span:48},
+  '12x24s':{l:'12×24, stacked',p:'stack',tw:24,th:12,span:48}, '4x24':{l:'4×24, stacked',p:'stack',tw:24,th:4,span:48},
+  '12x36v':{l:'12×36, vertical',p:'stack',tw:12,th:36,span:72}, '36x36':{l:'36×36',p:'grid',tw:36,th:36,span:72},
+  '12x12':{l:'12×12',p:'grid',tw:12,th:12,span:24}, '48x96':{l:'48×96 slab',p:'stack',tw:48,th:96,span:192},
+  '60x126':{l:'60×126 slab',p:'stack',tw:60,th:126,span:252}, '48x112':{l:'48×112 slab',p:'stack',tw:48,th:112,span:224},
+  '8x8':{l:'8×8',p:'grid',tw:8,th:8,span:32}, '13x13':{l:'13×13',p:'grid',tw:13,th:13,span:26,slot:true},
+  'rain':{l:'12.5″ relief sheet',p:'grid',tw:12.5,th:12.5,span:25}, '4x4':{l:'Shown as 4×4, many sizes',p:'grid',tw:4,th:4,span:24},
+  'sq':{l:'Shown as 8×8, ask about sizes',p:'grid',tw:8,th:8,span:32}, 'lg':{l:'Shown as 24×48, ask about sizes',p:'stack',tw:48,th:24,span:96},
+  'lgf':{l:'Shown as 24×24, ask about sizes',p:'grid',tw:24,th:24,span:48},
+  '1hex':{l:'1″ hex mosaic',p:'hex',tw:1,th:1,span:12,g:0.06}, '4hex':{l:'4″ hex',p:'hex',tw:4,th:4,span:24},
+  'sherr':{l:'Small herringbone',p:'herringbone',tw:1,th:3,span:12,g:0.06}, 'lherr':{l:'Large herringbone',p:'herringbone',tw:3,th:9,span:36},
+  '1x1':{l:'1×1 mosaic',p:'grid',tw:1,th:1,span:12,g:0.06}, 'half':{l:'½×½ mosaic',p:'grid',tw:0.5,th:0.5,span:6,g:0.05},
+  '2x2':{l:'2×2 mosaic',p:'grid',tw:2,th:2,span:12,g:0.08}, 'chev':{l:'Chevron mosaic, 10×12-4/5 sheet',p:'herringbone',tw:1.5,th:4.5,span:12}
+};
+const LOOKS=[['all','All'],['marble','Marble'],['stone','Stone'],['concrete','Concrete'],['slab','Slabs'],['color','Color'],['mosaic','Mosaic']];
+/* look: how the surface is drawn. colors: [name, base, accent, {rough, look, only:[sizes]}] */
+const COLL=[
+  {id:'leon',name:'Leon',desc:'Marble-look porcelain, Antique finish',look:'marble',cat:'marble',mat:'porcelain',rough:0.35,
+    box:{'24x48':15.5,'32x32':13.78,'24x24':11.63,'4x24':9.04},wall:['24x48','4x24'],floor:['24x24','32x32'],
+    colors:[['Calacatta Bamboo','#f1eee8','#b3a27f'],['Lilac White','#f3f1ed','#c9c2cf'],['Arabescato','#ecebe9','#85878c'],['Grigio Etrusco','#7d7a76','#d8d4cd'],['Veria Green','#3f5a4c','#d9e2d8']]},
+  {id:'taj',name:'Taj Mahal',desc:'Quartzite-look porcelain, polished or matte',look:'quartzite',cat:'marble',mat:'porcelain',
+    wall:['24x48','48x48'],floor:['24x48b','12x24'],
+    colors:[['Polished','#eee5d5','#b0976a',{rough:0.18}],['Matte','#ece3d3','#b0976a',{rough:0.5}]]},
+  {id:'duomo',name:'Duomo',desc:'Candoglia marble look, soft pink and grey',look:'marble',cat:'marble',mat:'porcelain',rough:0.4,
+    wall:['lg'],floor:['lgf'],colors:[['Puro','#e9e2dc','#b9a7a0'],['Lume','#ddd2cb','#9a8a84']]},
+  {id:'celine',name:'Celine',desc:'Exotic quartzite look, big formats',look:'quartzite',cat:'marble',mat:'porcelain',rough:0.3,
+    wall:['24x48','48x112'],floor:['24x48b','48x48'],
+    colors:[['Sea Green','#8fa59a','#e3ebe5'],['Macaubas','#c9cfd0','#7c8a90'],['Patagonia Wow','#e7dcc7','#8a6a4a'],['Deep River','#3e4a55','#d4dbe0'],['Quarzite Fusion','#b8a99a','#efe7dd']]},
+  {id:'marvel',name:'Marvel XL',desc:'6mm porcelain slabs, few grout lines',look:'marble',cat:'slab',mat:'porcelain',rough:0.25,
+    wall:['48x96'],floor:[],
+    colors:[['Crystal White','#f4f3f0','#d6d4cf'],['Calacatta Imperiale','#f2efe9','#8d8577'],['Calacatta Black','#1f1f21','#e9e6df'],['Bianco Dolomite','#eeeeec','#a9adb2'],['Grey Cloud','#8f9092','#d7d7d5'],['Statuario','#f3f2ef','#7f8288'],['Carrara Pure','#eceeef','#a7acb2'],['Calacatta Extra','#f3f0ea','#9c8a6c'],['Royal Calacatta','#f1ece3','#b38c55'],['Fior di Bosco','#6e6b66','#e5e1d9'],
+      ['Travertino Sand','#d9c7a8','#b49c78',{look:'travertine',rough:0.55}],['Travertino Pearl','#e6ddcf','#c4b49c',{look:'travertine',rough:0.55}],['Travertino White','#eee9df','#cfc4b2',{look:'travertine',rough:0.55}],['Cremo Delicato','#e8dccb','#c9b392'],['Cream Prestige','#e2d3bb','#b89f7c'],
+      ['Boost White','#e3e2df','#c9c8c4',{look:'concrete',rough:0.6}],['Boost Smoke','#a7a6a3','#8c8b88',{look:'concrete',rough:0.6}],['Boost Tarmac','#4a4a4c','#3a3a3c',{look:'concrete',rough:0.6}],['Grey Stone','#8b8984','#6f6d69',{look:'stone',rough:0.55}]]},
+  {id:'dolcissima',name:'Dolcissima',desc:'12mm porcelain slabs, 60×126, also for vanity tops',look:'marble',cat:'slab',mat:'porcelain',rough:0.22,
+    wall:['60x126'],floor:[],
+    colors:[['Calacatta White','#f3f1ec','#a59a86'],['Arabescato','#ecebe9','#7f8186'],['Statuarietto','#f1f0ed','#9a9da2'],['Platinum Grey','#a3a4a6','#e1e1df'],['Nero Marquina','#1c1c1e','#e8e8e6'],['Calacatta Antique','#ece4d4','#a4865a'],['Calacatta Oro','#f3efe6','#c0a066'],
+      ['Basalto Grey','#6a6b6c','#545556',{look:'stone',rough:0.55}],['Basalto White','#dcdbd7','#c3c2be',{look:'stone',rough:0.55}],['Grigio Trambisera','#8e8c88','#dad7d1'],['Invisible Grey','#c7c6c3','#f2f1ee'],['Lasa Argento','#eceded','#a8abae'],['Luxe White','#f5f4f1','#c9c7c2'],['Macchia Vecchia','#e9e4dc','#6c7469'],['Pietra Grey','#4a4b4e','#d9d9d6'],['Savoie Blue','#3a4b5c','#c9d3db'],['Taj Mahal','#ede4d3','#b0976a',{look:'quartzite'}]]},
+  {id:'bryce',name:'Bryce',desc:'Limestone-look porcelain, Matte-Pro walls, C2 GRIP floors',look:'stone',cat:'stone',mat:'porcelain',rough:0.55,
+    wall:['24x48b'],floor:['12x24','24x24','48x48'],shower:['chev'],
+    colors:[['Champagne','#e2d8c6','#bfae93'],['Sable','#cdbfa8','#a89a82'],['Perle','#e7e1d6','#cdc4b4'],['Gris','#a9a6a0','#8f8c86'],['Gris Strutturato','#a9a6a0','#7c7973',{look:'ribbed',rough:0.6,only:['24x48b']}]]},
+  {id:'apollo',name:'Apollo',desc:'Speckled stone-look porcelain, Natural finish',look:'apollo',cat:'stone',mat:'porcelain',rough:0.5,
+    wall:['24x48'],floor:['24x24','24x48b'],shower:['2x2'],
+    colors:[['Comet Cream','#dcd2c1','#b4a690'],['Starlight','#e6e5e1','#a9a8a4'],['Meteor Grey','#8d8c8a','#5f5e5c'],['Darkside','#3d3d3f','#77777a']]},
+  {id:'ardoise',name:'Ardoise',desc:'Slate-look porcelain with a cleft texture',look:'slate',cat:'stone',mat:'porcelain',rough:0.65,
+    wall:['12x24','24x48'],floor:['12x24'],shower:['2x2'],
+    colors:[['Black','#2e2f31','#4a4b4d'],['Grey','#6d6e6f','#56575a'],['Sand','#b9ab92','#9a8c74'],['White','#dedcd6','#c4c2bc']]},
+  {id:'gordon',name:'Gordon',desc:'Soft stone look, smooth or textured',look:'stone',cat:'stone',mat:'porcelain',rough:0.55,
+    wall:['lg'],floor:['lgf'],colors:[['Moon','#d8d6d1','#bfbdb8'],['Grey','#9d9c99','#82817e'],['Blue','#6c7d8c','#55636f'],['Graphite','#47484a','#5e5f61']]},
+  {id:'hh',name:'Hex & Herringbone',desc:'Natural stone, honed. Seal it once a year',look:'marble',cat:'mosaic',mat:'natural stone',rough:0.45,
+    wall:[],floor:['lherr','4hex'],shower:['1hex','sherr','lherr'],
+    colors:[['Grigio Cielo','#a9adb0','#e6e6e2'],['Seta Nera','#2c2c2e','#6a6a6c'],['Fosso','#8a8378','#c9c2b6']]},
+  {id:'madison',name:'Madison',desc:'Concrete-look porcelain in 13 colors',look:'concrete',cat:'concrete',mat:'porcelain',rough:0.6,
+    wall:['24x48'],floor:['24x24','48x48'],
+    colors:[['Bianco','#dedcd7'],['Avorio','#e3dccd'],['Cipria','#d9c3b8'],['Tortora','#9a8c7c'],['Grigio','#9d9a95'],['Cielo','#a9b6bf'],['Salvia','#a3ad98'],['Giada','#6f8a7c'],['Marrone','#6b5747'],['Coccio','#a5634a'],['Fiamma','#c0573d'],['Antracite','#4d4d4f'],['Nero','#2b2b2c']]},
+  {id:'rialto',name:'Rialto',desc:'Terrazzo-look porcelain, Matte',look:'terrazzo',cat:'concrete',mat:'porcelain',rough:0.6,
+    wall:['24x48'],floor:['24x24','48x48'],shower:['2x2'],
+    colors:[['Cream','#e6dccb','#9c8d78',{only:['24x24','2x2']}],['White','#eeece7','#8f8d88',{only:['24x24','2x2']}],['Taupe','#bcae9c','#7d6f5e',{only:['24x24','2x2']}],['Grey','#bdbbb6','#77756f',{only:['24x24','2x2']}],
+      ['Moon','#d9d8d4','#8e8d89',{only:['24x48','48x48','2x2']}],['Sage','#a9b39f','#6c7a62',{only:['24x48','48x48','2x2']}],['Sunset','#e0b39a','#b5684d',{only:['24x48','48x48','2x2']}],['Night','#3a3d44','#a4a7ad',{only:['24x48','48x48','2x2']}]]},
+  {id:'pastelli',name:'Pastelli',desc:'Porcelain mosaics, matte, slip resistant',look:'solid',cat:'mosaic',mat:'porcelain',rough:0.6,
+    wall:[],floor:[],shower:['1hex','1x1','half'],
+    colors:[['Osso','#e6dfd2'],['Conchiglia','#ead9cc'],['Aurora','#e8d3c7'],['Ostrica','#cfc9bd'],['Cenere','#b9b6b0'],['Nocciola','#a58f78'],['Ruscello','#8fa6ae'],['Antracite','#4b4b4d']]},
+  {id:'yasmine',name:'Yasmine',desc:'Glossy handmade look, plain or textured',look:'glossy',cat:'color',mat:'porcelain',rough:0.15,
+    box:{'12x12':17.66},wall:['12x36v','12x12'],floor:['36x36'],
+    colors:[['Bianco Maiolica','#f1ede4'],['Bianco Maiolica Textured','#efeae0','#d9d2c4',{look:'ribbed'}]]},
+  {id:'isla',name:'Isla',desc:'Glossy 8×8 with a handmade wave',look:'glossy',cat:'color',mat:'ceramic',rough:0.12,
+    wall:['8x8'],floor:[],colors:[['White','#f2f0ea'],['Sand','#d9c7a6'],['Coral','#e3836b'],['Green','#6f9a7e']]},
+  {id:'flicker',name:'Flicker',desc:'13×13 with a recessed center, sculpted wall tile',look:'solid',cat:'color',mat:'porcelain',rough:0.5,
+    wall:['13x13'],floor:[],colors:[['Talc','#ecebe7'],['Mud','#8b7d6d'],['Soot','#3a3a3b']]},
+  {id:'rain',name:'Rain',desc:'Dimensional relief wall tile',look:'ribbed',cat:'color',mat:'porcelain',rough:0.4,
+    wall:['rain'],floor:[],colors:[['White','#f2f1ee'],['Almond','#e3d6c1'],['Black','#232325']]},
+  {id:'pottery',name:'Pottery',desc:'Terracotta look, warm and earthy',look:'clay',cat:'color',mat:'porcelain',rough:0.6,
+    wall:['sq'],floor:['sq'],colors:[['Talco','#efeae1'],['Creta','#e1d4c1'],['Sabbia','#d8c3a2'],['Argilla','#c58f6e'],['Terracotta','#b86a48'],['Mattone','#a5553b']]},
+  {id:'dintorni',name:'Dintorni',desc:'8×8 solid colors, matte',look:'solid',cat:'color',mat:'porcelain',rough:0.55,
+    wall:['8x8'],floor:['8x8'],colors:[['Azzurro','#7fa8c9'],['Blu','#2f4f86'],['Verde Chiaro','#a9c3a0'],['Verde Scuro','#3f5f4a'],['Terracotta','#b8613f']]},
+  {id:'lumina',name:'Lumina',desc:'Soft-finish solid colors in 27 shades',look:'solid',cat:'color',mat:'porcelain',rough:0.45,
+    wall:['12x24'],floor:['24x24'],
+    colors:[['Superbranco','#f6f5f1'],['Ice','#e9ecec'],['Quartz','#dcd8d3'],['Bone','#e6dfd1'],['Bege','#d6c6ad'],['Platina','#c9c9c6'],['Titanium','#9b9b98'],['Grafite','#5b5c5e'],['Antracite','#3e3f41'],['Preto','#1f1f20'],['Jet','#141416'],['Lava','#4a3f3a'],['Toffee','#a77b56'],['Ocre','#c99a4b'],['Terracotta','#b8613f'],['Coral','#e08a74'],['Opala','#cfd8d6'],['Anis','#c7d39a'],['Pistachio','#b9c49a'],['Laurel','#8c9a74'],['Olivia','#6f7651'],['Palm','#3f6b4a'],['Jade','#5f9583'],['Teal','#2f6f73'],['Lagoon','#4f97a8'],['Indigo','#2f3f66'],['Cobalto','#2b4f9a']]},
+  {id:'vogue',name:'Vogue',desc:'34 solid colors, glossy or matte',look:'glossy',cat:'color',mat:'ceramic',rough:0.2,
+    wall:['4x4'],floor:[],
+    colors:[['Ghiaccio','#eef1f1'],['Latte','#f1ece2'],['Seta','#e9e2d5'],['Perla','#dcd8d0'],['Argento','#bfc0bf'],['Grigio','#8f9091'],['Fero','#4a4a4c'],['Nero','#1d1d1e'],['Beige','#d8c8ac'],['Tortora','#a99a88'],['Caffe','#5a4434'],['Rosa','#e8c3c3'],['Cipria','#e2c9bc'],['Lilla','#c9bcd3'],['Lavanda','#a59cc8'],['Mattone','#a65a43'],['Rosso','#b0302c'],['Granata','#6e2330'],['Mandarino','#e5843b'],['Giallo','#ecc74a'],['Cedro','#d9d97a'],['Senape','#c79d3a'],['Mastice','#b7b29a'],['Pistacchio','#a9c08d'],['Giada','#73a68e'],['Malachite','#2f7a5c'],['Turchese','#3fa3b0'],['Laguna','#4f9aa3'],['Petrolio','#2c5a66'],['Cielo','#b9d3e3'],['Azzurro','#8fb7d6'],['Ceruleo','#4f7fb8'],['Blu Avio','#5a7290'],['Cobalto','#2b4a9b']]}
+];
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const hashStr=s=>{ let h=2166136261; for(const ch of s) h=Math.imul(h^ch.charCodeAt(0),16777619); return h>>>0; };
+const lum=h=>{ const [r,g,b]=hex2rgb(h); return (0.299*r+0.587*g+0.114*b)/255; };
+function surface(look,base,acc,seed){
+  const dark=lum(base)<0.35, a=acc||shade(base,dark?22:-26), lt=shade(base,dark?30:18), dk=shade(base,dark?-12:-30);
+  switch(look){
+    case 'marble': return {vary:5,veins:{count:7+seed%7,color:a,width:1.6}};
+    case 'quartzite': return {vary:6,veins:{count:10+seed%6,color:a,width:2.2},grain:{n:90,color:a,soft:true}};
+    case 'stone': return {vary:7,speckle:{n:2600,a:dk,b:lt,size:1.6}};
+    case 'apollo': return {vary:5,speckle:{n:4200,a:a,b:lt,size:2.4}};
+    case 'concrete': return {vary:4,speckle:{n:3000,a:dk,b:lt,size:1.6}};
+    case 'terrazzo': return {vary:4,speckle:{n:5200,a:a,b:lt,size:2.8}};
+    case 'travertine': return {vary:7,grain:{n:240,color:a},speckle:{n:900,a:dk,b:lt,size:1.2}};
+    case 'slate': return {vary:12,grain:{n:200,color:dk},speckle:{n:1800,a:dk,b:lt,size:1.3}};
+    case 'ribbed': return {vary:6,grain:{n:300,color:a}};
+    case 'clay': return {vary:16,speckle:{n:1400,a:dk,b:lt,size:1.2}};
+    case 'glossy': return {vary:16};
+    default: return {vary:6};
+  }
+}
+const TILES={};
+for(const c of COLL) for(const [cname,base,acc,x] of c.colors){
+  const o=x||{}, look=o.look||c.look;
+  for(const role of ['wall','floor','shower']) for(const f of (c[role]||[])){
+    if(o.only&&!o.only.includes(f)) continue;
+    const F=FMT[f], id=`${role[0]}-${c.id}-${slug(cname)}-${f}`, seed=hashStr(id)%9973;
+    const dark=lum(base)<0.35, grout=shade(base,dark?18:-16);
+    TILES[id]={coll:c.id,line:c.name,name:cname,fmt:F.l,size:`${F.l} ${c.mat}`+(c.mat==='natural stone'?' (seal it)':''),boxSF:(c.box||{})[f],sw:base,
+      rough:o.rough!=null?o.rough:c.rough,cat:/hex|herr|1x1|half|2x2|chev/.test(f)?'mosaic':c.cat,
+      tex:Object.assign({pattern:F.p,tw:F.tw,th:F.th,span:F.span,base,grout,groutIn:F.g||0.0625,seed,slot:F.slot},surface(look,base,acc,seed))};
+  }
+}
+function hueWords(h){ const [r,g,b]=hex2rgb(h).map(v=>v/255), mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2, d=mx-mn;
+  if(d<0.06) return l>0.82?'white':l<0.25?'black dark':'grey gray';
+  let hu=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4; hu=(hu*60+360)%360;
+  if(l>0.8&&d<0.14) return hu<70?'white cream beige ivory warm':'white cool';
+  if(hu<18||hu>=340) return l>0.7?'pink blush':'red terracotta';
+  if(hu<45) return l>0.62?'beige tan cream warm':'brown orange terracotta warm';
+  if(hu<70) return l>0.6?'beige cream yellow warm':'yellow gold mustard';
+  if(hu<170) return 'green sage';
+  if(hu<250) return 'blue';
+  return 'purple lilac lavender'; }
+for(const t of Object.values(TILES)) t.words=hueWords(t.sw);
+const ROLE={wall:'w-',floor:'f-',shower:'s-'};
+const tilesFor=role=>Object.keys(TILES).filter(k=>k.startsWith(ROLE[role]));
+
+/* ---------- Shower glass from H2 LLC (styles, glass, handles and finishes from h2-llc.com) ---------- */
+const DOORS={
+  pivot:{name:'Pivot Door + Panel',sub:'Frameless 3/8″',full:'Frameless 3/8″ pivot door, fixed panel and return panel'},
+  bypass:{name:'Modern Bypass',sub:'Frameless sliding',full:'Modern frameless bypass, sliding on an exposed rail, with a return panel'},
+  semi:{name:'Sliding Shower',sub:'Semi-frameless 3/8″',full:'Semi-frameless 3/8″ sliding doors with a return panel'},
+  splash:{name:'Splashguard',sub:'Frameless, no door',full:'Frameless splashguard with a return panel, open walk-in entry'}
+};
+const GLASS={
+  clear:{name:'Clear',sub:'Standard',color:0xcfe7e5,opacity:0.34,rough:0.04,edge:0x9fc4c1},
+  lowiron:{name:'Low Iron',sub:'Extra clear',color:0xf1f8f8,opacity:0.22,rough:0.03,edge:0xd4e8e7},
+  rain:{name:'Rain',sub:'Textured',color:0xdbeceb,opacity:0.5,rough:0.25,edge:0xa9c9c6,rain:true},
+  satin:{name:'Satin',sub:'Frosted',color:0xeef2f2,opacity:0.74,rough:0.6,edge:0xc7d6d5}
+};
+const HANDLES={ c:{name:'C Pull'}, ladder:{name:'Ladder'}, crescent:{name:'Crescent'}, square:{name:'Square'} };
+const HW={
+  black:{name:'Matte Black',color:'#1b1b1b',metal:0.6,rough:0.5,css:'linear-gradient(135deg,#3a3a3a,#111 60%,#262626)'},
+  chrome:{name:'Chrome',color:'#e3e6e9',metal:0.75,rough:0.12,css:'linear-gradient(135deg,#ffffff,#9ea4ab 45%,#f4f6f8 60%,#7d838a)'},
+  pnickel:{name:'Polished Nickel',color:'#d8d0bf',metal:0.75,rough:0.15,css:'linear-gradient(135deg,#fbf6ea,#a59c8a 45%,#efe7d6 60%,#8d8474)'},
+  bnickel:{name:'Brushed Nickel',color:'#bab6ad',metal:0.75,rough:0.36,css:'linear-gradient(135deg,#d9d6cf,#9d9990 55%,#c4c0b8)'},
+  snickel:{name:'Satin Nickel',color:'#c5c2b9',metal:0.7,rough:0.45,css:'linear-gradient(135deg,#dddad3,#aca9a1 55%,#cbc8c0)'},
+  steel:{name:'Brushed Stainless',color:'#c6c8ca',metal:0.75,rough:0.32,css:'linear-gradient(135deg,#e2e4e6,#a3a6a9 55%,#cfd1d3)'},
+  bgold:{name:'Brushed Gold',color:'#c4a05a',metal:0.8,rough:0.33,css:'linear-gradient(135deg,#e8cf8f,#a7823d 55%,#d4b46f)'},
+  bbronze:{name:'Brushed Bronze',color:'#8a6a48',metal:0.75,rough:0.38,css:'linear-gradient(135deg,#b08d68,#6c5034 55%,#9a7a57)'},
+  orb:{name:'Oil Rubbed Bronze',color:'#3f2d22',metal:0.6,rough:0.5,css:'linear-gradient(135deg,#6a4e3b,#2a1d15 55%,#4d3628)'}
+};
+
+/* ---------- Style presets: each one sets every pick at once ---------- */
+const STYLES={
+  modern:{
+    name:'Modern Marble', mood:'Bright and dramatic. Marble-look slabs from floor to ceiling, a freestanding soaking tub under the window, a walk-in glass shower and a floating double vanity with matte black trim.',
+    paint:'#efece6', trim:'#ffffff', vanityWall:'full', bench:'tile', pendant:'ring',
+    picks:{wall:'w-leon-calacatta-bamboo-24x48',floor:'f-leon-grigio-etrusco-24x24',shower:'s-hh-seta-nera-1hex',door:'pivot',glass:'clear',handle:'c',hw:'black'},
+    wallWhere:'Shower, tub wall and vanity wall, to the ceiling', wallSF:197,
+    vanity:{kind:'float',color:'#f4f2ee',wood:null,top:'#fafafa',glow:true}, mirror:'rect', fix:'modern', towel:'#3b3d40',
+    tub:{ext:'#fbfbfa',feet:false},
+    finish:[['Tub','72″ freestanding oval soaker, floor-mount filler'],['Shower','66″×48″ walk-in, rain head + handheld, tiled bench'],['Glass',''],['Vanity','72″ floating double, matte white, LED under-glow'],['Top','White quartz, two undermount sinks'],['Waterproofing','Schluter-KERDI system'],['Fixtures',''],['Lighting','Stacked LED ring chandelier, backlit mirrors']]
+  },
+  spa:{
+    name:'Spa Retreat', mood:'Warm and calm, like a hotel spa. Limestone-look walls, a stone-tone freestanding tub, a walk-in shower with a teak bench and an oak double vanity.',
+    paint:'#c9cfbf', trim:'#f3efe7', vanityWall:'none', bench:'teak', pendant:'drum',
+    picks:{wall:'w-bryce-sable-24x48b',floor:'f-bryce-champagne-12x24',shower:'s-bryce-champagne-chev',door:'pivot',glass:'lowiron',handle:'ladder',hw:'bbronze'},
+    wallWhere:'Shower and tub wall, to the ceiling', wallSF:143,
+    vanity:{kind:'float',color:'#b88c5e',wood:['#c09668','#8a6440'],top:'#f2eee6',glow:false}, mirror:'round', fix:'spa', towel:'#9aa58e',
+    tub:{ext:'#ddd5c7',feet:false},
+    finish:[['Tub','72″ freestanding, stone-tone finish'],['Shower','66″×48″ walk-in, rain head + handheld, teak bench'],['Glass',''],['Vanity','72″ floating double, oak-look'],['Top','Quartz, two undermount sinks'],['Waterproofing','Schluter-KERDI system'],['Fixtures',''],['Lighting','Woven pendant cluster, globe sconces'],['Paint','Soft sage, satin']]
+  },
+  classic:{
+    name:'Transitional', mood:'Timeless with a little glamour. Stacked white tile, a natural-stone herringbone floor, a navy tub on brass feet and a navy shaker double vanity with brass.',
+    paint:'#e9e6e0', trim:'#ffffff', vanityWall:'wainscot', bench:'tile', pendant:'lantern',
+    picks:{wall:'w-leon-lilac-white-4x24',floor:'f-hh-grigio-cielo-lherr',shower:'s-hh-grigio-cielo-lherr',door:'pivot',glass:'clear',handle:'crescent',hw:'bgold'},
+    wallWhere:'Shower and tub wall to the ceiling, vanity wainscot', wallSF:170,
+    vanity:{kind:'shaker',color:'#26364f',wood:null,top:'#f5f3ef',glow:false}, mirror:'brass', fix:'classic', towel:'#f4f2ee',
+    tub:{ext:'#26364f',feet:true},
+    finish:[['Tub','72″ freestanding, navy exterior on brass feet'],['Shower','66″×48″ walk-in, rain head + handheld, tiled bench'],['Glass',''],['Vanity','72″ navy shaker double, gold pulls'],['Top','Carrara-look quartz'],['Waterproofing','Schluter-KERDI system'],['Fixtures',''],['Lighting','Candle chandelier, shaded sconces'],['Paint','Greige walls, white trim']]
+  }
+};
+/* current design: a style preset plus whatever the client changed */
+const cfg={style:'modern',...STYLES.modern.picks};
+function design(){
+  const B=STYLES[cfg.style], h=HW[cfg.hw];
+  const tile=(id,where,sf)=>Object.assign({id},TILES[id],{label:TILES[id].line+' '+TILES[id].name,where,sf});
+  const S=Object.assign({},B,{
+    wallTile:tile(cfg.wall,B.wallWhere,B.wallSF), floorTile:tile(cfg.floor,'Main floor',146), accentTile:tile(cfg.shower,'Shower floor and niche',25),
+    metal:h.color, metalness:h.metal, metalRough:h.rough, door:cfg.door, glassKind:cfg.glass, handle:cfg.handle});
+  S.finish=B.finish.map(([k,v])=>[k, k==='Glass'?`${DOORS[cfg.door].full}, ${GLASS[cfg.glass].name.toLowerCase()} glass${cfg.door==='splash'?'':', '+HANDLES[cfg.handle].name+' handle'}, by H2 LLC` : k==='Fixtures'?`${h.name}, faucets, shower trim and glass hardware` : v]);
+  return S;
+}
+const texCache=new Map();
+function tileTex(id){
+  if(texCache.has(id)){ const t=texCache.get(id); texCache.delete(id); texCache.set(id,t); return t; }
+  const t=makeTex(TILES[id].tex); texCache.set(id,t);
+  for(const [k,v] of texCache){ if(texCache.size<=9) break; if(k!==cfg.wall&&k!==cfg.floor&&k!==cfg.shower){ v.dispose(); texCache.delete(k); } }
+  return t;
+}
+const CODE=['Permits and inspections with your town, start to finish.','Licensed plumber and electrician for the tub filler, shower valves, drains, fan and lighting.','Schluter-KERDI waterproofing on the shower walls and floor, flood-tested before tile goes in.','Tempered, labeled glass on the shower.','We check the floor framing before a heavy freestanding tub goes in.'];
+
+/* ---------- Three.js setup ---------- */
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
+renderer.setClearColor(0x000000,0);
+renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,4/3,1,3000);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=0.08; controls.maxPolarAngle=Math.PI*0.495; controls.minDistance=40; controls.maxDistance=760;
+
+scene.add(new THREE.HemisphereLight(0xfff8ee,0x9a948a,0.55));
+const sun=new THREE.DirectionalLight(0xfff3e2,0.62); sun.position.set(L/2+150,320,W/2+210); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-150,right:150,top:150,bottom:-150,near:10,far:900}); sun.target.position.set(L/2,0,W/2); scene.add(sun,sun.target);
+const bulb=new THREE.PointLight(0xffe9cc,0.5,420,1.4); bulb.position.set(L/2,H-10,W/2+10); scene.add(bulb);
+const vanityLight=new THREE.PointLight(0xfff0d8,0.35,150,2); scene.add(vanityLight);
+const windowLight=new THREE.PointLight(0xe6f1ff,0.3,200,2); windowLight.position.set(114,70,24); scene.add(windowLight);
+
+let room=new THREE.Group(); scene.add(room);
+/* section-cut wall caps and floor slab so the room reads clearly against the dark stage */
+(function(){ const cap=new THREE.MeshStandardMaterial({color:0xf4f2ee,roughness:0.7}); const T=4.5;
+  const add=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),cap); m.position.set(x,y,z); m.castShadow=true; scene.add(m); };
+  add(L+T,1,T,L/2-T/2,H+0.5,-T/2); add(T,1,W+T,-T/2,H+0.5,W/2-T/2);
+  add(T,H,T,-T/2,H/2,-T/2); add(T,H+1,1,-T/2,(H+1)/2,W+0.5); add(1,H+1,T,L+0.5,(H+1)/2,-T/2);
+  add(L+2*T,4,W+2*T,L/2,-2.05,W/2);
+})();
+const std=(o)=>new THREE.MeshStandardMaterial(Object.assign({roughness:0.6,metalness:0},o));
+function box(w,h,d,mat,x,y,z,parent){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; (parent||room).add(m); return m; }
+function plane(w,h,mat,pos,rotY,rotX,parent){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat); m.position.copy(pos); if(rotY) m.rotation.y=rotY; if(rotX) m.rotation.x=rotX; m.receiveShadow=true; (parent||room).add(m); return m; }
+function cyl(rt,rb,h,mat,x,y,z,seg){ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||28),mat); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; room.add(m); return m; }
+/* a wall surface with rectangular openings (window, niche); holes are [x0,y0,x1,y1] in the plane's own coordinates */
+function holedPlane(w,h,mat,pos,rotY,holes){
+  const sh=new THREE.Shape(); sh.moveTo(-w/2,-h/2); sh.lineTo(w/2,-h/2); sh.lineTo(w/2,h/2); sh.lineTo(-w/2,h/2); sh.lineTo(-w/2,-h/2);
+  for(const [x0,y0,x1,y1] of holes){ const p=new THREE.Path(); p.moveTo(x0,y0); p.lineTo(x0,y1); p.lineTo(x1,y1); p.lineTo(x1,y0); p.lineTo(x0,y0); sh.holes.push(p); }
+  const g=new THREE.ShapeGeometry(sh), uv=g.attributes.uv, p=g.attributes.position;
+  for(let i=0;i<uv.count;i++) uv.setXY(i,p.getX(i)/w+0.5,p.getY(i)/h+0.5);
+  const m=new THREE.Mesh(g,mat); m.position.copy(pos); if(rotY) m.rotation.y=rotY; m.receiveShadow=true; room.add(m); return m;
+}
+
+/* ---------- Layout of the sample primary bath (inches) ---------- */
+const SX=66, SZ=48;                 // walk-in shower in the back-left corner: 66″ along the back wall, 48″ deep
+const TX=114, TZ=34, TL=72, TD=36;  // freestanding tub centered under the window
+const WIN=[90,46,138,94];           // window in the back wall: x0,y0,x1,y1
+const VZ0=62, VZ1=134, VD=22;       // double vanity on the left wall
+const SINKS=[80,116];
+const NICHE=[9,48,39,62];           // shower niche in the left wall: z0,y0,z1,y1 (recessed 3.5″)
+const TOIL=122;                      // toilet centerline on the right wall
+const DOOR=[84,120];                // door opening in the front wall
+
+let rainCanvas=null;
+function rainTex(){
+  if(!rainCanvas){ rainCanvas=document.createElement('canvas'); rainCanvas.width=rainCanvas.height=256; const g=rainCanvas.getContext('2d'), r=rng(99);
+    g.fillStyle='rgba(255,255,255,0.42)'; g.fillRect(0,0,256,256);
+    for(let i=0;i<220;i++){ const x=r()*256, y=r()*256, w=2.5+r()*3.5, h=w*(1.4+r()*1.2); g.fillStyle=`rgba(255,255,255,${0.25+r()*0.4})`; g.beginPath(); g.ellipse(x,y,w,h,0,0,7); g.fill(); g.fillStyle='rgba(120,150,150,0.25)'; g.beginPath(); g.ellipse(x+0.6,y+0.8,w*0.6,h*0.6,0,0,7); g.fill(); } }
+  const t=new THREE.CanvasTexture(rainCanvas); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.encoding=THREE.sRGBEncoding; return t;
+}
+function build(){
+  scene.remove(room); room.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ for(const m of [].concat(o.material)){ if(m.map) m.map.dispose(); if(m.alphaMap) m.alphaMap.dispose(); m.dispose(); } } }); room=new THREE.Group(); scene.add(room);
+  const S=design(), key=cfg.style;
+  const wallT=tileTex(cfg.wall), floorT=tileTex(cfg.floor), accT=tileTex(cfg.shower);
+  const paint=std({color:S.paint,roughness:0.85});
+  const tileMat=(t,w,h,rough)=>std({map:texFor(t,w,h),roughness:rough==null?0.35:rough});
+  const wr=TILES[cfg.wall].rough==null?0.35:TILES[cfg.wall].rough;
+  const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+  const metal=std({color:S.metal,metalness:S.metalness,roughness:S.metalRough});
+  const porcelain=std({color:'#fbfbfa',roughness:0.18});
+  const trim=std({color:S.trim,roughness:0.5});
+
+  // floor, shower floor and ceiling (planes face inward so the camera sees through from outside)
+  plane(L,W,tileMat(floorT,L,W,TILES[cfg.floor].rough==null?0.5:TILES[cfg.floor].rough),V(L/2,0,W/2),0,-Math.PI/2);
+  plane(SX,SZ,tileMat(accT,SX,SZ,0.55),V(SX/2,0.12,SZ/2),0,-Math.PI/2);
+  plane(L,W,std({color:'#f7f6f3',roughness:0.95}),V(L/2,H,W/2),0,Math.PI/2);
+
+  // back wall (z=0): window opening, tiled floor to ceiling
+  const winHole=[WIN[0]-L/2,WIN[1]-H/2,WIN[2]-L/2,WIN[3]-H/2];
+  holedPlane(L,H,paint,V(L/2,H/2,0),0,[winHole]);
+  holedPlane(L,H,tileMat(wallT,L,H,wr),V(L/2,H/2,0.1),0,[winHole]);
+  // left wall (x=0): local x runs toward -z, so a world z maps to (W/2 - z)
+  const nicheHole=[W/2-NICHE[2],NICHE[1]-H/2,W/2-NICHE[0],NICHE[3]-H/2];
+  holedPlane(W,H,paint,V(0,H/2,W/2),Math.PI/2,[nicheHole]);
+  holedPlane(SZ,H,tileMat(wallT,SZ,H,wr),V(0.1,H/2,SZ/2),Math.PI/2,[[SZ/2-NICHE[2],NICHE[1]-H/2,SZ/2-NICHE[0],NICHE[3]-H/2]]);
+  const vw0=VZ0-6, vw1=VZ1+6;
+  if(S.vanityWall==='full') plane(vw1-vw0,H,tileMat(wallT,vw1-vw0,H,wr),V(0.1,H/2,(vw0+vw1)/2),Math.PI/2);
+  if(S.vanityWall==='wainscot'){ plane(vw1-vw0,54,tileMat(wallT,vw1-vw0,54,wr),V(0.1,27,(vw0+vw1)/2),Math.PI/2); box(1.2,1.5,vw1-vw0,trim,0.6,54.75,(vw0+vw1)/2); }
+  // front and right walls
+  plane(L,H,paint,V(L/2,H/2,W),Math.PI);
+  plane(W,H,paint,V(L,H/2,W/2),-Math.PI/2);
+  // baseboard on the painted walls
+  box(0.6,4,W,trim,L-0.3,2,W/2);
+  box(DOOR[0],4,0.6,trim,DOOR[0]/2,2,W-0.3); box(L-DOOR[1],4,0.6,trim,(L+DOOR[1])/2,2,W-0.3);
+  if(S.vanityWall==='none') box(0.6,4,W-SZ,trim,0.3,2,(W+SZ)/2);
+
+  // window: lined jambs, sill, sky glass and a mullion
+  const ww=WIN[2]-WIN[0], wh=WIN[3]-WIN[1], wcx=(WIN[0]+WIN[2])/2, wcy=(WIN[1]+WIN[3])/2;
+  box(ww,0.75,4.5,trim,wcx,WIN[3]-0.375,-2.25); box(ww,0.75,4.5,trim,wcx,WIN[1]+0.375,-2.25);
+  box(0.75,wh,4.5,trim,WIN[0]+0.375,wcy,-2.25); box(0.75,wh,4.5,trim,WIN[2]-0.375,wcy,-2.25);
+  const sky=new THREE.Mesh(new THREE.PlaneGeometry(ww,wh),new THREE.MeshBasicMaterial({color:0xcfe2ec})); sky.position.set(wcx,wcy,-3); room.add(sky);
+  box(ww,1.2,0.8,trim,wcx,wcy,-2.8); box(1.2,wh,0.8,trim,wcx,wcy,-2.8);
+  box(ww+4,1,3,std({color:S.wallTile.tex.base,roughness:0.35}),wcx,WIN[1]-0.5,1.3);
+
+  // recessed niche in the shower's left wall: a 3.5″ pocket inside the stud bay
+  const nz=(NICHE[0]+NICHE[2])/2, ny=(NICHE[1]+NICHE[3])/2, nw=NICHE[2]-NICHE[0], nh=NICHE[3]-NICHE[1];
+  plane(nw,nh,std({map:texFor(accT,nw,nh),roughness:0.4}),V(-3.5,ny,nz),Math.PI/2);
+  const nTrim=std({map:texFor(accT,12,12),roughness:0.35});
+  box(3.5,0.4,nw+0.8,nTrim,-1.75,NICHE[1]-0.2,nz); box(3.5,0.4,nw+0.8,nTrim,-1.75,NICHE[3]+0.2,nz);
+  box(3.5,nh,0.4,nTrim,-1.75,ny,NICHE[0]-0.2); box(3.5,nh,0.4,nTrim,-1.75,ny,NICHE[2]+0.2);
+
+  // shower: bench, linear drain, rain head from the ceiling, handheld on a slide bar, valve
+  if(S.bench==='teak'){
+    const oak=std({map:woodTex('#c09668','#8a6440',5),roughness:0.6});
+    for(let i=0;i<5;i++) box(2.6,1.4,40,oak,1.8+i*3,18,SZ/2);
+    for(const z of [6,SZ-6]) for(const x of [2,13]) box(1.5,17.3,1.5,oak,x,8.65,z);
+  } else {
+    box(15,18,SZ-0.2,std({map:texFor(wallT,SZ,18),roughness:0.35}),7.5,9,SZ/2);
+    box(16,1.2,SZ,std({color:S.wallTile.tex.base,roughness:0.3}),8,18.6,SZ/2);
+  }
+  box(36,0.2,2.4,metal,SX/2+6,0.3,SZ-4);
+  const arc=(R,t,a,mat,x,y,z,ry)=>{ const m=new THREE.Mesh(new THREE.TorusGeometry(R,t,10,28,a),mat); m.position.set(x,y,z); if(ry) m.rotation.y=ry; m.castShadow=true; room.add(m); return m; };
+  const glow=std({color:'#fff4dc',emissive:'#ffdca0',emissiveIntensity:0.9});
+  const soft=std({color:'#fff8ec',emissive:'#ffe7c2',emissiveIntensity:0.65});
+  // rain head from the ceiling: square for modern, round for the others
+  const rx=SX/2+4;
+  cyl(0.5,0.5,10,metal,rx,H-5,24); cyl(1.6,1.6,0.6,metal,rx,H-0.3,24,20);
+  if(S.fix==='modern') box(12,0.6,12,metal,rx,H-10,24); else { cyl(6,6,0.6,metal,rx,H-10,24,40); cyl(5.3,5.3,0.1,std({color:'#d9dadb',metalness:0.6,roughness:0.3}),rx,H-10.35,24,40); }
+  // thermostatic valve and diverter on the back wall
+  if(S.fix==='modern'){ box(7,7,0.4,metal,rx,46,0.3); box(0.7,0.7,4,metal,rx,46,2.4); box(4.5,4.5,0.4,metal,rx,36,0.3); box(0.6,0.6,2.5,metal,rx,36,1.6); }
+  else { for(const [y,r] of [[46,3.6],[36,2.6]]){ const pl=cyl(r,r,0.4,metal,rx,y,0.3,32); pl.rotation.x=Math.PI/2; }
+    if(S.fix==='classic'){ for(const y of [46,36]){ box(3.2,0.5,0.5,metal,rx,y,1.6); box(0.5,3.2,0.5,metal,rx,y,1.6); cyl(0.4,0.4,1.4,metal,rx,y,0.9).rotation.x=Math.PI/2; } }
+    else { for(const y of [46,36]){ const k=cyl(1,1,1.8,metal,rx,y,1.3,20); k.rotation.x=Math.PI/2; } } }
+  // handheld on a slide bar with an elbow and hose
+  box(1,30,1,metal,SX-12,52,0.8); box(1.6,1.6,1.6,metal,SX-12,38,0.9);
+  const hh=cyl(1.3,0.7,7.5,metal,SX-12,61,2.2); hh.rotation.x=0.3; cyl(1.5,1.5,0.4,metal,SX-12,64.6,3.1).rotation.x=0.3;
+  arc(5.5,0.3,Math.PI,std({color:S.metal,metalness:S.metalness*0.8,roughness:Math.max(0.4,S.metalRough)}),SX-12,38+0,3,Math.PI/2).rotation.z=Math.PI;
+  // shower glass from H2 LLC: door style, glass type, handle and hardware finish all come from the picks
+  const G=GLASS[S.glassKind];
+  const glass=new THREE.MeshPhysicalMaterial({color:G.color,metalness:0.1,roughness:G.rough,transparent:true,opacity:G.rain?1:G.opacity,side:THREE.DoubleSide,depthWrite:false});
+  if(G.rain){ glass.map=rainTex(); glass.needsUpdate=true; }
+  const edgeM=new THREE.LineBasicMaterial({color:G.edge});
+  // glass panel with visible polished edges so the panels and door read clearly; h/y default to an 80″ panel set on the curb
+  const gp=(w,d,x,z,h,y)=>{ const g=box(w,h||80,d,glass,x,y==null?40.5:y,z); g.castShadow=false; g.renderOrder=2; if(G.rain) g.material=glassFor(g,Math.max(w,d),h||80);
+    g.add(new THREE.LineSegments(new THREE.EdgesGeometry(g.geometry),edgeM)); return g; };
+  function glassFor(g,w,h){ const m=glass.clone(); m.map=glass.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(w/12,h/12); return m; }
+  const clip=(x,y,z)=>box(1.2,2.4,1.2,metal,x,y,z);
+  // handle on a panel that runs along x (glass faces ±z); one on each side of the glass
+  function handle(x,z){
+    for(const sd of [1,-1]){
+      if(S.handle==='c'){ const bar=cyl(0.35,0.35,12,metal,x,44,z+sd*1.8,14); for(const y of [38.6,49.4]){ const st=cyl(0.3,0.3,1.6,metal,x,y,z+sd*1,10); st.rotation.x=Math.PI/2; } }
+      else if(S.handle==='ladder'){ box(0.6,20,0.6,metal,x,44,z+sd*1.9); for(const y of [35,53]) box(0.5,0.5,1.7,metal,x,y,z+sd*1.05); }
+      else if(S.handle==='square'){ box(0.7,10,0.7,metal,x,44,z+sd*1.9); for(const y of [39.4,48.6]) box(0.7,0.7,1.8,metal,x,y,z+sd*1.1); }
+      else { const t=new THREE.Mesh(new THREE.TorusGeometry(4.6,0.32,10,28,Math.PI),metal); t.position.set(x,44,z); t.rotation.set(0,sd*Math.PI/2,Math.PI/2); t.castShadow=true; room.add(t); }
+    }
+  }
+  // return panel toward the tub is part of every layout
+  gp(0.4,SZ-1,SX,SZ/2-0.5); for(const y of [10,70]) clip(SX,y,0.6);
+  if(S.door==='pivot'){
+    gp(37,0.4,18.5,SZ); gp(27,0.4,SX-14.5,SZ+0.6); handle(SX-26,SZ+0.6);
+    for(const y of [10,70]) clip(0.6,y,SZ);
+    for(const y of [8,73]) box(1.6,1.6,1,metal,SX-1.2,y,SZ+0.6); // pivot hinges
+  } else if(S.door==='bypass'){
+    gp(34,0.4,17,SZ,78,40); gp(34,0.4,SX-17,SZ+1.6,78,40);
+    const rail=cyl(0.7,0.7,SX+2,metal,SX/2,83,SZ+0.8,16); rail.rotation.z=Math.PI/2;
+    for(const x of [0.4,SX-0.4]) box(1,2.6,2.4,metal,x,83,SZ+0.8);
+    for(const [x,z] of [[5,SZ],[29,SZ],[SX-29,SZ+1.6],[SX-5,SZ+1.6]]){ const w=cyl(1.5,1.5,0.6,metal,x,80.6,z,20); w.rotation.x=Math.PI/2; box(0.8,2.2,0.8,metal,x,79.2,z); }
+    box(3,1.2,3,metal,33,0.9,SZ+0.8);
+    handle(31,SZ); handle(SX-31,SZ+1.6);
+  } else if(S.door==='semi'){
+    box(SX,1.8,2.6,metal,SX/2,80.9,SZ+0.8); box(SX,0.9,2.6,metal,SX/2,0.75,SZ+0.8);
+    box(1.4,80,2.6,metal,0.7,40.5,SZ+0.8); box(1.4,80,2.6,metal,SX-0.7,40.5,SZ+0.8);
+    gp(34,0.4,18,SZ+0.2,78,40.6); gp(34,0.4,SX-18,SZ+1.4,78,40.6);
+    handle(32,SZ+0.2); handle(SX-32,SZ+1.4);
+  } else {
+    gp(40,0.4,20,SZ); for(const y of [10,70]) clip(0.6,y,SZ);
+    box(0.7,0.7,SZ,metal,39.4,80.2,SZ/2); box(1.4,2,1.4,metal,39.4,80.2,0.7); // support bar to the back wall
+  }
+  // freestanding tub: exterior shell, white interior, rolled rim, optional feet
+  const lift=S.tub.feet?4:0;
+  const ext=std({color:S.tub.ext,roughness:S.tub.ext==='#fbfbfa'?0.18:0.45});
+  const shell=new THREE.Mesh(new THREE.CylinderGeometry(TD/2,TD/2-3,22,48,1,true),ext); shell.position.set(TX,11+lift,TZ); shell.scale.x=TL/TD; shell.castShadow=shell.receiveShadow=true; room.add(shell);
+  const inner=new THREE.Mesh(new THREE.CylinderGeometry(TD/2-1.6,TD/2-5,19,48,1,true),std({color:'#fbfbfa',roughness:0.18,side:THREE.BackSide})); inner.position.set(TX,12.5+lift,TZ); inner.scale.x=(TL-3.2)/(TD-3.2); room.add(inner);
+  const tfloor=cyl(TD/2-5,TD/2-5,0.4,porcelain,TX,3.2+lift,TZ,48); tfloor.scale.x=(TL-10)/(TD-10);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(TD/2-0.8,0.9,10,64),porcelain); rim.rotation.x=Math.PI/2; rim.position.set(TX,22+lift,TZ); rim.scale.x=(TL-1.6)/(TD-1.6); rim.castShadow=true; room.add(rim);
+  const base=cyl(TD/2-3,TD/2-3,0.6,ext,TX,0.3+lift,TZ,48); base.scale.x=(TL-6)/(TD-6);
+  if(S.tub.feet) for(const dx of [-24,24]) for(const dz of [-9,9]){ cyl(1.6,1.1,4.2,metal,TX+dx,2.1,TZ+dz,16); }
+  // floor-mount tub filler: gooseneck spout, two levers and a handshower in its cradle
+  const fx=TX+TL/2+4;
+  cyl(2.6,2.8,0.6,metal,fx,0.3,TZ,28); cyl(0.85,0.85,36,metal,fx,18,TZ,18);
+  arc(3.2,0.6,Math.PI,metal,fx-3.2,36,TZ); cyl(0.65,0.55,1.6,metal,fx-6.4,35.3,TZ,16);
+  for(const d of [-1,1]){ cyl(0.5,0.5,1.4,metal,fx,28,TZ+d*1.2,12).rotation.x=Math.PI/2; box(0.5,0.5,2.6,metal,fx+0.6,28.6,TZ+d*2.4); }
+  box(1.4,2.2,1.4,metal,fx+1.4,23,TZ); const th=cyl(0.95,0.6,6.5,metal,fx+1.9,26.6,TZ,14); th.rotation.z=-0.12;
+  // side stool with folded towels and a candle beside the tub
+  const stoolM=S.fix==='spa'?std({map:woodTex('#c09668','#8a6440',7),roughness:0.6}):std({color:S.fix==='modern'?'#e9e7e3':'#f1efe9',roughness:0.25});
+  cyl(7,7,1.2,stoolM,TX-TL/2-9,17.4,TZ+10,32); cyl(3.4,4.6,16.8,stoolM,TX-TL/2-9,8.4,TZ+10,32);
+  const towelC=S.towel, towel=std({color:towelC,roughness:1});
+  box(9,1.6,7,towel,TX-TL/2-9,18.8,TZ+10); box(8.6,1.6,6.6,std({color:shade(towelC,14),roughness:1}),TX-TL/2-9,20.4,TZ+10);
+  cyl(1.4,1.4,3,std({color:'#f6f1e6',roughness:0.8}),TX-TL/2-6.5,22.7,TZ+12,16); cyl(0.6,0.6,0.5,glow,TX-TL/2-6.5,24.3,TZ+12,8);
+  // plant in the corner by the window
+  cyl(5.5,4.2,13,std({color:S.fix==='spa'?'#b9a78d':(S.fix==='modern'?'#2b2b2d':'#f1efe9'),roughness:0.7}),L-10,6.5,10,28);
+  const leaf=std({color:'#5f7a52',roughness:0.85});
+  for(const [dx,dy,dz,r] of [[0,22,0,6.5],[-3,28,2,5],[3,27,-2,5],[0,33,0,4.2],[-2,18,-3,4.4],[3,19,3,4.2]]){ const s=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),leaf); s.position.set(L-10+dx,dy,10+dz); s.castShadow=true; room.add(s); }
+  cyl(0.4,0.4,10,std({color:'#6b5a43'}),L-10,15,10,6);
+  // light fixture over the tub
+  const cable=(x,z,y0)=>cyl(0.1,0.1,H-y0,metal,x,(H+y0)/2,z,6);
+  if(S.fix==='modern'){
+    // three stacked LED rings
+    for(const [r,y] of [[15,H-24],[10.5,H-30],[6,H-36]]){ const ring=new THREE.Mesh(new THREE.TorusGeometry(r,0.55,10,72),glow); ring.rotation.x=Math.PI/2; ring.position.set(TX,y,TZ); room.add(ring);
+      const band=new THREE.Mesh(new THREE.TorusGeometry(r,0.75,6,72),metal); band.rotation.x=Math.PI/2; band.position.set(TX,y+0.6,TZ); room.add(band);
+      for(const a of [0.4,2.5,4.6]) cable(TX+Math.cos(a)*r,TZ+Math.sin(a)*r,y+0.6); }
+    cyl(3,3,0.8,metal,TX,H-0.4,TZ,24);
+  } else if(S.fix==='spa'){
+    // cluster of three woven drum pendants at staggered heights
+    const rattan=std({color:'#c8a878',roughness:0.95,side:THREE.DoubleSide});
+    for(const [dx,dz,y,r] of [[-9,-4,H-30,7],[8,-3,H-38,6],[0,7,H-34,6.5]]){ cable(TX+dx,TZ+dz,y+5); const d=cyl(r,r*0.8,10,rattan,TX+dx,y,TZ+dz,36); d.material=rattan;
+      for(let i=0;i<3;i++){ const b=new THREE.Mesh(new THREE.TorusGeometry(r*(0.86+i*0.07),0.18,6,40),std({color:'#a88858',roughness:1})); b.rotation.x=Math.PI/2; b.position.set(TX+dx,y-3.5+i*3.5,TZ+dz); room.add(b); }
+      cyl(r*0.78,r*0.78,0.3,soft,TX+dx,y-5,TZ+dz,30); }
+    box(26,0.8,6,metal,TX,H-0.4,TZ);
+  } else {
+    // brass chandelier: ring of candle arms with small bulbs
+    cyl(2.6,2.6,1,metal,TX,H-0.5,TZ,24); cyl(0.3,0.3,20,metal,TX,H-11,TZ,8);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(11,0.45,8,60),metal); ring.rotation.x=Math.PI/2; ring.position.set(TX,H-32,TZ); room.add(ring);
+    const s=new THREE.Mesh(new THREE.SphereGeometry(2.4,16,12),metal); s.position.set(TX,H-21,TZ); room.add(s);
+    for(let i=0;i<6;i++){ const a=i*Math.PI/3, x=TX+Math.cos(a)*11, z=TZ+Math.sin(a)*11;
+      const arm=cyl(0.25,0.25,13.5,metal,(TX+x)/2,H-26.5,(TZ+z)/2,6); arm.lookAt(x,H-32,z); arm.rotateX(Math.PI/2);
+      cyl(1,0.6,1.2,metal,x,H-31.2,z,12); cyl(0.55,0.55,3.2,std({color:'#fbf7ee',roughness:0.6}),x,H-29,z,10);
+      const f=new THREE.Mesh(new THREE.SphereGeometry(0.75,10,8),glow); f.scale.y=1.6; f.position.set(x,H-26.6,z); room.add(f); }
+  }
+
+  // double vanity on the left wall
+  const vl=VZ1-VZ0, vz=(VZ0+VZ1)/2;
+  const vMat = S.vanity.wood ? std({map:woodTex(S.vanity.wood[0],S.vanity.wood[1],9),roughness:0.55}) : std({color:S.vanity.color,roughness:0.5});
+  if(S.vanity.kind==='float'){
+    box(VD,18,vl,vMat,VD/2,23,vz);
+    const groove=std({color:'#00000055',roughness:1});
+    box(0.2,0.3,vl-2,groove,VD+0.05,23,vz); for(const z of [vz-vl/4,vz,vz+vl/4]) box(0.2,17,0.3,groove,VD+0.05,23,z);
+    for(const z of [vz-vl*3/8,vz-vl/8,vz+vl/8,vz+vl*3/8]){ box(0.8,0.8,9,metal,VD+0.6,28.5,z); box(0.8,0.8,9,metal,VD+0.6,19.5,z); }
+    if(S.vanity.glow) box(VD-3,0.3,vl-3,glow,VD/2,13.9,vz);
+  } else {
+    box(VD,31,vl,vMat,VD/2,17.5,vz);
+    box(VD-1,3,vl-1,std({color:shade(S.vanity.color,-12),roughness:0.6}),VD/2-1,1.5,vz);
+    const panel=std({color:shade(S.vanity.color,8),roughness:0.5});
+    for(let i=0;i<4;i++){ const z=VZ0+vl/8+i*vl/4; box(0.6,21,vl/4-2,vMat,VD+0.3,15,z); box(0.4,16,vl/4-7,panel,VD+0.75,15,z); box(0.6,6,vl/4-2,vMat,VD+0.3,29,z); box(1.2,0.8,5,metal,VD+1,29,z); }
+  }
+  box(VD+1,1.5,vl+1,std({color:S.vanity.top,roughness:0.25}),(VD+1)/2,33.75,vz);
+  const glassM=std({color:'#c3cfd3',metalness:0.35,roughness:0.12});
+  for(const z of SINKS){
+    const sink=cyl(7,6,0.5,std({color:'#e6e6e3',roughness:0.2}),VD/2+1,34.3,z); sink.scale.x=0.75;
+    cyl(0.9,0.9,0.15,metal,VD/2+1,34.6,z,16);   // drain
+    // deck-mount faucet: gooseneck spout; lever for modern, knobs for spa, cross handles for classic
+    cyl(1.3,1.5,0.6,metal,4,34.8,z,20); cyl(0.55,0.55,7,metal,4,38.4,z,16);
+    arc(2.6,0.5,Math.PI,metal,6.6,41.9,z); cyl(0.5,0.45,1.4,metal,9.2,41.3,z,12);
+    if(S.fix==='modern'){ box(0.5,0.5,3.2,metal,4,39.5,z+1.9); }
+    else for(const d of [-1,1]){ cyl(1.1,1.2,0.6,metal,4,34.8,z+d*4.5,16);
+      if(S.fix==='spa'){ cyl(0.9,0.9,2,metal,4,36.1,z+d*4.5,16); }
+      else { cyl(0.35,0.35,1.6,metal,4,35.9,z+d*4.5,8); box(2.6,0.4,0.4,metal,4,36.8,z+d*4.5); box(0.4,0.4,2.6,metal,4,36.8,z+d*4.5); } }
+    // mirror over each sink, with lighting to match the style
+    if(S.mirror==='round'){ const mf=cyl(13,13,1,vMat,0.6,62,z,48); mf.rotation.z=Math.PI/2; const mm=cyl(12,12,1,glassM,1.1,62,z,48); mm.rotation.z=Math.PI/2; }
+    else if(S.mirror==='rect'){ box(0.5,39,29,soft,0.3,62,z); box(1,36,26,glassM,0.9,62,z); }
+    else { box(1,36,26,metal,0.5,62,z); box(1,34.5,24.5,glassM,0.9,62,z); }
+  }
+  if(S.mirror==='round'){ // globe sconces on bronze arms
+    for(const z of [VZ0+2,vz,VZ1-2]){ const bp=cyl(1.6,1.6,0.5,metal,0.3,66,z,20); bp.rotation.z=Math.PI/2; box(4,0.6,0.6,metal,2.2,66,z); cyl(0.6,0.9,1.2,metal,4.3,67,z,12);
+      const g=new THREE.Mesh(new THREE.SphereGeometry(2.8,20,14),soft); g.position.set(4.3,70,z); room.add(g); } }
+  else if(S.mirror==='brass'){ // shaded sconces between the mirrors
+    for(const z of [VZ0+2,vz,VZ1-2]){ box(0.4,6,2.2,metal,0.2,66,z); box(3.2,0.5,0.5,metal,1.8,64,z); cyl(0.5,0.5,4,metal,3.4,66,z,10);
+      cyl(2.4,3.4,4.6,std({color:'#f6f1e6',emissive:'#ffe2b0',emissiveIntensity:0.35,roughness:0.9,side:THREE.DoubleSide}),3.4,70.5,z,28); } }
+  else { // slim vertical LED bars beside the backlit mirrors
+    for(const z of [VZ0+1.5,vz,VZ1-1.5]){ box(1.2,24,1.6,metal,0.8,62,z); box(0.3,22,1,glow,1.45,62,z); } }
+  vanityLight.position.set(18,70,vz);
+  // rug on the open floor
+  const rug=box(36,0.4,54,std({color:key==='spa'?'#efe9dd':(key==='modern'?'#d9d6d0':'#cfd6de'),roughness:1}),62,0.25,vz+4); rug.castShadow=false;
+
+  // skirted one-piece toilet on the right wall, paper holder and a towel bar with a towel by the door
+  box(8,15,17,porcelain,L-4.5,22.5,TOIL); box(8.8,1.4,18,porcelain,L-4.6,30.7,TOIL);
+  cyl(0.9,0.9,0.4,metal,L-4.5,31.5,TOIL,16);
+  const skirt=cyl(7.4,7.2,15,porcelain,L-16,7.5,TOIL,36); skirt.scale.x=1.4;
+  const seat=cyl(7.6,7.6,1,porcelain,L-16.2,15.5,TOIL,36); seat.scale.x=1.42;
+  const lid=cyl(7.2,7.2,0.8,std({color:'#f3f3f1',roughness:0.25}),L-16.2,16.4,TOIL,36); lid.scale.x=1.38;
+  box(1.6,0.6,4,metal,L-0.8,26,TOIL-19); const roll=cyl(2.2,2.2,4,std({color:'#fbfbfa',roughness:0.95}),L-3,24,TOIL-19,20); roll.rotation.x=Math.PI/2; cyl(0.4,0.4,4.6,metal,L-3,24,TOIL-19,8).rotation.x=Math.PI/2;
+  box(2.4,0.8,0.8,metal,L-1.2,50,TOIL-56); box(2.4,0.8,0.8,metal,L-1.2,50,TOIL-36); box(0.8,0.8,20,metal,L-2.4,50,TOIL-46);
+  box(1.6,20,15,towel,L-2.4,40.5,TOIL-46); box(1.7,2.4,15.2,std({color:shade(towelC,-18),roughness:1}),L-2.4,34,TOIL-46);
+  // hand towel ring at the end of the vanity
+  const tr=new THREE.Mesh(new THREE.TorusGeometry(3.2,0.3,8,24),metal); tr.position.set(1.2,46,VZ1+5); tr.rotation.y=Math.PI/2; room.add(tr);
+  box(1.2,12,7,towel,1.6,40,VZ1+5);
+
+  // update side panel
+  document.getElementById('s-name').textContent=custom()?'Your design':S.name;
+  document.getElementById('s-mood').textContent=S.mood;
+  const tiles=[S.wallTile,S.floorTile,S.accentTile];
+  document.getElementById('s-tile').innerHTML=tiles.map(t=>{ const sf=Math.ceil(t.sf*1.1); return `<li><span class="sw" style="background:${t.sw}"></span><div><div class="what">${t.label}</div><div class="where">${t.size} · ${t.where}</div></div><div class="qty">${sf} SF<br><span style="color:var(--muted)">${t.boxSF?Math.ceil(sf/t.boxSF)+' boxes':'incl. 10% waste'}</span></div></li>`; }).join('');
+  document.getElementById('s-finish').innerHTML=S.finish.map(([a,b])=>`<div><span>${a}</span><span>${b}</span></div>`).join('');
+  document.getElementById('s-code').innerHTML=CODE.map(c=>`<li>${c}</li>`).join('');
+  drawPlan(S);
+  syncPanel();
+}
+
+
+/* ---------- 2D dimensioned floor plan ---------- */
+function ftin(i){ const f=Math.floor(i/12), r=Math.round(i-f*12); return f? `${f}′-${r}″` : `${r}″`; }
+function drawPlan(S){
+  const svg=document.getElementById('plan-svg');
+  svg.setAttribute('viewBox','-46 -50 262 250');
+  const ink='var(--ink)', mut='var(--muted)', FS=5;
+  const o=[];
+  const rect=(x,y,w,h,a)=>o.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" ${a||''}/>`);
+  const line=(x1,y1,x2,y2,a)=>o.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${a||''}/>`);
+  const text=(x,y,t,a)=>o.push(`<text x="${x}" y="${y}" font-size="${FS}" text-anchor="middle" ${a||''}>${t}</text>`);
+  const tick=(x,y)=>line(x-1.8,y+1.8,x+1.8,y-1.8,`stroke="${ink}" stroke-width=".7"`);
+  const dimH=(x1,x2,y,lab)=>{ line(x1,y,x2,y,`stroke="${mut}" stroke-width=".5"`); for(const x of [x1,x2]){ line(x,y-3,x,y+3,`stroke="${mut}" stroke-width=".5"`); tick(x,y);} text((x1+x2)/2,y-2,lab||ftin(x2-x1),'font-size="4.4"'); };
+  const dimV=(y1,y2,x,lab)=>{ line(x,y1,x,y2,`stroke="${mut}" stroke-width=".5"`); for(const y of [y1,y2]){ line(x-3,y,x+3,y,`stroke="${mut}" stroke-width=".5"`); tick(x,y);} o.push(`<text x="${x-2}" y="${(y1+y2)/2}" font-size="4.4" text-anchor="middle" transform="rotate(-90 ${x-2} ${(y1+y2)/2})">${lab||ftin(y2-y1)}</text>`); };
+  const st=`fill="none" stroke="${ink}" stroke-width=".8"`;
+  // walls 4.5″ thick, window and door openings
+  rect(-4.5,-4.5,L+9,W+9,`fill="${ink}" opacity=".88"`);
+  rect(0,0,L,W,`fill="var(--panel)"`);
+  rect(WIN[0],-4.5,WIN[2]-WIN[0],4.5,`fill="var(--panel)" stroke="${ink}" stroke-width=".5"`); line(WIN[0],-2.25,WIN[2],-2.25,`stroke="${ink}" stroke-width=".5"`);
+  rect(DOOR[0],W-0.5,DOOR[1]-DOOR[0],5.5,`fill="var(--panel)"`);
+  // shower
+  rect(0,0,SX,SZ,`fill="${S.accentTile.sw}" opacity=".5"`);
+  const gl=`stroke="${ink}" stroke-width="1.4"`;
+  line(SX,0,SX,SZ-1,gl);
+  if(S.door==='pivot'){ line(0,SZ,37,SZ,gl); line(SX-28,SZ+0.6,SX-1,SZ+0.6,gl);
+    o.push(`<path d="M${SX-1} ${SZ+0.6} A 27 27 0 0 1 ${SX-28} ${SZ+27.6}" fill="none" stroke="${mut}" stroke-width=".5" stroke-dasharray="1.6 1.2"/>`); }
+  else if(S.door==='splash'){ line(0,SZ,40,SZ,gl); text(53,SZ+7,'OPEN ENTRY','font-size="3.2" fill="var(--muted)"'); }
+  else { line(0,SZ,34,SZ,gl); line(SX-34,SZ+1.6,SX,SZ+1.6,gl);
+    o.push(`<path d="M${SX-30} ${SZ+5} h-14 m3 -2 l-3 2 l3 2" fill="none" stroke="${mut}" stroke-width=".5"/>`); text(SX-24,SZ+10,'SLIDING','font-size="3.2" fill="var(--muted)"'); }
+  rect(0,1,15,SZ-2,`fill="${S.bench==='teak'?'#c09668':S.wallTile.sw}" stroke="${ink}" stroke-width=".5"`);
+  rect(SX/2+6-18,SZ-5.2,36,2.4,`fill="${ink}"`);
+  rect(-4,NICHE[0],4,NICHE[2]-NICHE[0],`fill="var(--panel)" stroke="${ink}" stroke-width=".5"`);
+  text(SX/2+6,SZ/2-2,'WALK-IN SHOWER'); text(SX/2+6,SZ/2+4.5,'66″ × 48″','font-size="4.2"');
+  text(7.5,SZ/2+2,'BENCH','font-size="3.4" transform="rotate(-90 7.5 '+(SZ/2+2)+')"');
+  text(SX/2+6,SZ-7.5,'LINEAR DRAIN','font-size="3.2"'); text(-15,(NICHE[0]+NICHE[2])/2+1.2,'NICHE','font-size="3.6"');
+  // tub + filler
+  o.push(`<ellipse cx="${TX}" cy="${TZ}" rx="${TL/2}" ry="${TD/2}" ${st} fill="${S.tub.ext}" fill-opacity=".25"/>`);
+  o.push(`<ellipse cx="${TX}" cy="${TZ}" rx="${TL/2-4}" ry="${TD/2-4}" ${st}/>`);
+  o.push(`<circle cx="${TX+TL/2+4}" cy="${TZ}" r="2.2" fill="${ink}"/>`);
+  text(TX,TZ+1.8,'FREESTANDING TUB'); text(TX,TZ+8,'72″ × 36″','font-size="4.2"');
+  // vanity
+  rect(0,VZ0,VD,VZ1-VZ0,`fill="${S.vanity.wood?S.vanity.wood[0]:S.vanity.color}" opacity=".85" stroke="${ink}" stroke-width=".8"`);
+  for(const z of SINKS) o.push(`<ellipse cx="${VD/2+1}" cy="${z}" rx="5.2" ry="7" fill="var(--panel)" stroke="${ink}" stroke-width=".6"/>`);
+  o.push(`<text x="${VD+7}" y="${(VZ0+VZ1)/2}" font-size="${FS}" text-anchor="middle" transform="rotate(-90 ${VD+7} ${(VZ0+VZ1)/2})">72″ DOUBLE VANITY</text>`);
+  // toilet
+  rect(L-8.3,TOIL-7.5,7.5,15,`${st} rx="1"`); o.push(`<ellipse cx="${L-17}" cy="${TOIL}" rx="10" ry="7" ${st}/>`);
+  line(L+4.5,TOIL,L-30,TOIL,`stroke="${mut}" stroke-width=".4" stroke-dasharray="3 1 .6 1"`);
+  text(L-17,TOIL-12,'TOILET','font-size="4.2"');
+  // door + swing
+  line(DOOR[1],W,DOOR[1],W-36,`stroke="${ink}" stroke-width="1.2"`);
+  o.push(`<path d="M${DOOR[1]} ${W-36} A 36 36 0 0 0 ${DOOR[0]} ${W}" fill="none" stroke="${mut}" stroke-width=".5" stroke-dasharray="1.6 1.2"/>`);
+  text((DOOR[0]+DOOR[1])/2,W+13,'36″ DOOR','font-size="4.2"');
+  text((WIN[0]+WIN[2])/2,-8,'WINDOW','font-size="3.6"');
+  // dimension strings
+  dimH(0,L,-38,'14′-0″');
+  dimH(0,SX,-24); dimH(SX,TX-TL/2,-24,'12″'); dimH(TX-TL/2,TX+TL/2,-24); dimH(TX+TL/2,L,-24,'18″');
+  dimV(0,W,-36,'12′-0″');
+  dimV(0,SZ,-24); dimV(SZ,VZ0,-24,'14″'); dimV(VZ0,VZ1,-24); dimV(VZ1,W,-24,'10″');
+  dimV(TOIL,W,L+26,'22″ TO ℄');
+  dimH(DOOR[0],DOOR[1],W+22);
+  text(L/2,W+36,'PLAN · 12′ × 14′ PRIMARY BATH · DIMENSIONS TO FINISHED FACES','font-size="3.8" fill="var(--muted)"');
+  svg.innerHTML=o.join('');
+  const notes=[
+    'Walk-in shower in the corner with H2 LLC glass, a tiled or teak bench, a recessed niche and a linear drain.',
+    'Freestanding 72″ tub centered under the window, 12″ from the shower glass, with a floor-mount filler at the foot.',
+    '72″ double vanity on its own wall with two sinks and two mirrors. Toilet on the right wall by the door, 22″ to centerline (15″ min), with a paper holder and towel bar.'
+  ];
+  document.getElementById('plan-notes').innerHTML=notes.map(n=>`<li>${n}</li>`).join('');
+}
+
+/* ---------- Camera views ---------- */
+const VIEWS={
+  over:{pos:[262,215,290],tgt:[L/2,26,W/2]},
+  door:{pos:[102,64,W+60],tgt:[100,42,20]},
+  wet:{pos:[132,62,104],tgt:[46,40,22]},
+  plan:{pos:[L/2,440,W/2+0.01],tgt:[L/2,0,W/2]}
+};
+let anim=null;
+function setView(k,instant){
+  const v=VIEWS[k]; const from={p:camera.position.clone(),t:controls.target.clone()};
+  const to={p:new THREE.Vector3(...v.pos),t:new THREE.Vector3(...v.tgt)};
+  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===k));
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(instant||reduce){ camera.position.copy(to.p); controls.target.copy(to.t); controls.update(); return; }
+  const t0=performance.now(); anim=(now)=>{ const u=Math.min(1,(now-t0)/700), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    camera.position.lerpVectors(from.p,to.p,e); controls.target.lerpVectors(from.t,to.t,e); if(u>=1) anim=null; };
+}
+document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+document.querySelectorAll('.style-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.style-btn').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  Object.assign(cfg,{style:b.dataset.style},STYLES[b.dataset.style].picks); build();
+}));
+
+/* ---------- customize panel ---------- */
+const CATS=[['floor','Floor'],['wall','Walls'],['shower','Shower floor'],['door','Shower door'],['hw','Finish']];
+let cat='floor';
+const thumbs={}, thumbQ=[];
+function thumbURL(id){ if(!thumbs[id]){ const t=TILES[id].tex; thumbs[id]=makeTex(Object.assign({},t,{span:Math.min(t.span,t.pattern==='hex'||t.span<=12?8:48)}),168).toDataURL('image/jpeg',0.82); } return thumbs[id]; }
+/* draw swatches a few at a time so the panel opens instantly */
+function pumpThumbs(){ const t0=performance.now();
+  while(thumbQ.length&&performance.now()-t0<12){ const el=thumbQ.shift(); if(!el.isConnected) continue; el.style.backgroundImage=`url(${thumbURL(el.dataset.id)})`; el.classList.add('in'); }
+  if(thumbQ.length) requestAnimationFrame(pumpThumbs); }
+function queueThumbs(root){ const fresh=!thumbQ.length; root.querySelectorAll('.th[data-id]').forEach(el=>{ if(thumbs[el.dataset.id]){ el.style.backgroundImage=`url(${thumbs[el.dataset.id]})`; el.classList.add('in'); } else thumbQ.push(el); }); if(fresh&&thumbQ.length) requestAnimationFrame(pumpThumbs); }
+const look={floor:'all',wall:'all',shower:'all'}; let query='';
+const custom=()=>{ const p=STYLES[cfg.style].picks; return Object.keys(p).some(k=>p[k]!==cfg[k]); };
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const card=(k,v,on,th,nm,sub,round)=>`<button class="card" data-k="${k}" data-v="${v}" aria-pressed="${on}"><span class="th${round?' round':''}" ${th.startsWith('<')?'':`style="background:${th}"`}>${th.startsWith('<')?th:''}</span><span class="nm">${esc(nm)}</span>${sub?`<span class="sub">${esc(sub)}</span>`:''}</button>`;
+function doorIcon(d){
+  const f='fill="rgba(207,231,229,.22)" stroke="#fff" stroke-width="1.6"', m='stroke="#fff" stroke-width="2.4"';
+  const body={ pivot:`<rect x="12" y="14" width="34" height="58" ${f}/><rect x="48" y="14" width="26" height="58" ${f}/><line x1="52" y1="38" x2="52" y2="50" ${m}/><path d="M74 72 A 26 26 0 0 1 48 82" fill="none" stroke="#94a3b8" stroke-dasharray="3 2"/>`,
+    bypass:`<line x1="8" y1="12" x2="80" y2="12" ${m}/><rect x="12" y="16" width="36" height="56" ${f}/><rect x="40" y="18" width="36" height="56" ${f}/><line x1="44" y1="38" x2="44" y2="50" ${m}/><circle cx="20" cy="15" r="2.5" fill="#fff"/><circle cx="68" cy="16" r="2.5" fill="#fff"/>`,
+    semi:`<rect x="10" y="12" width="68" height="62" fill="none" ${m}/><rect x="13" y="15" width="34" height="56" ${f}/><rect x="41" y="15" width="34" height="56" ${f}/><line x1="44" y1="38" x2="44" y2="50" ${m}/>`,
+    splash:`<rect x="12" y="14" width="40" height="58" ${f}/><line x1="52" y1="14" x2="80" y2="10" ${m}/><path d="M60 50 h16 m-4 -3 l4 3 l-4 3" fill="none" stroke="#94a3b8" stroke-width="1.4"/>` }[d];
+  return `<svg viewBox="0 0 88 88" aria-hidden="true"><line x1="6" y1="76" x2="82" y2="76" stroke="#94a3b8" stroke-width="1"/>${body}</svg>`;
+}
+function glassIcon(g){
+  const G=GLASS[g], c='#'+G.color.toString(16).padStart(6,'0');
+  const dots=G.rain?Array.from({length:40},(_,i)=>`<ellipse cx="${(i*37)%84+2}" cy="${(i*53)%84+2}" rx="1.4" ry="2.6" fill="#fff" opacity=".55"/>`).join(''):'';
+  return `<svg viewBox="0 0 88 88" aria-hidden="true"><rect width="88" height="88" fill="#2b3134"/><path d="M0 60 L88 30 L88 88 L0 88Z" fill="#46505a"/><rect width="88" height="88" fill="${c}" opacity="${G.opacity+(G.rain?0.15:0)}"/>${dots}<path d="M10 6 L30 6 L10 40Z" fill="#fff" opacity=".18"/></svg>`;
+}
+function handleIcon(h){
+  const st='fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"';
+  const body={ c:`<path d="M44 26 h10 v36 h-10" ${st}/>`, ladder:`<path d="M40 18 v52 M52 18 v52 M40 26 h12 M40 62 h12" ${st}/>`, crescent:`<path d="M42 24 A 20 20 0 0 1 42 64" ${st}/>`, square:`<path d="M40 28 h12 v32 h-12" stroke="#fff" stroke-width="3.6" fill="none"/>` }[h];
+  return `<svg viewBox="0 0 88 88" aria-hidden="true"><rect x="22" y="8" width="16" height="72" fill="rgba(207,231,229,.25)" stroke="#94a3b8"/>${body}</svg>`;
+}
+function renderOpts(){
+  const o=[];
+  if(cat==='floor'||cat==='wall'||cat==='shower'){
+    const head={floor:'Main floor',wall:'Walls',shower:'Shower floor and niche'}[cat], cur=TILES[cfg[cat]];
+    const all=tilesFor(cat), have=new Set(all.map(id=>TILES[id].cat));
+    o.push(`<div class="now"><span class="th in" style="background-image:url(${thumbURL(cfg[cat])})"></span><span><span class="now-k">${head} now</span><span class="now-v">${esc(cur.line+' '+cur.name)}</span><span class="now-s">${esc(cur.fmt)}</span></span></div>`);
+    o.push(`<div class="tools"><input class="search" id="t-q" type="search" placeholder="Search ${all.length} Nemo tiles" value="${esc(query)}" aria-label="Search tiles by name or color">`+(have.size>1?`<div class="looks" role="group" aria-label="Filter by look">`+
+      LOOKS.filter(([k])=>k==='all'||have.has(k)).map(([k,n])=>`<button class="look" data-look="${k}" aria-pressed="${look[cat]===k}">${n}</button>`).join('')+`</div>`:'')+`</div>`);
+    const q=query.trim().toLowerCase(); let n=0;
+    for(const c of COLL){
+      const ids=all.filter(id=>{ const t=TILES[id]; return t.coll===c.id&&(look[cat]==='all'||t.cat===look[cat])&&(!q||(t.line+' '+t.name+' '+t.fmt+' '+c.desc+' '+t.words).toLowerCase().includes(q)); });
+      if(!ids.length) continue; n+=ids.length;
+      o.push(`<div class="coll"><p class="c-nm">${esc(c.name)}<span class="c-ct">${ids.length}</span></p><p class="c-desc">${esc(c.desc)}</p></div><div class="cards strip">`);
+      for(const id of ids){ const t=TILES[id];
+        o.push(`<button class="card" data-k="${cat}" data-v="${id}" aria-pressed="${cfg[cat]===id}"><span class="th" data-id="${id}" style="background-color:${t.sw}"></span><span class="nm">${esc(t.name)}</span><span class="sub">${esc(t.fmt)}</span></button>`); }
+      o.push('</div>');
+    }
+    if(!n) o.push(`<p class="p-note">No tile matches that. Try another color, like white, grey or green.</p>`);
+    if(cat==='shower') o.push('<p class="p-note">Small pieces let the shower floor slope to the drain. Large herringbone needs a linear drain. The niche is finished in the same tile.</p>');
+    else o.push('<p class="p-note">See a color you like? We bring real samples to your home before you order.</p>');
+  } else if(cat==='door'){
+    o.push('<p class="grp">Door style · H2 LLC</p><div class="cards">');
+    for(const k in DOORS) o.push(card('door',k,cfg.door===k,doorIcon(k),DOORS[k].name,DOORS[k].sub));
+    o.push('</div><p class="grp">Glass</p><div class="cards">');
+    for(const k in GLASS) o.push(card('glass',k,cfg.glass===k,glassIcon(k),GLASS[k].name,GLASS[k].sub));
+    o.push('</div>');
+    if(cfg.door!=='splash'){ o.push('<p class="grp">Handle</p><div class="cards">'); for(const k in HANDLES) o.push(card('handle',k,cfg.handle===k,handleIcon(k),HANDLES[k].name)); o.push('</div>'); }
+    o.push('<p class="p-note">All shower glass is tempered safety glass, measured and cut for your opening.</p>');
+  } else {
+    o.push('<p class="grp">Fixtures and glass hardware finish</p><div class="cards">');
+    for(const k in HW) o.push(card('hw',k,cfg.hw===k,HW[k].css,HW[k].name,'',true));
+    o.push('</div><p class="p-note">Faucets, shower trim, the tub filler and the glass hardware all match.</p>');
+  }
+  const box=document.getElementById('opts'); box.innerHTML=o.join(''); queueThumbs(box);
+  const qi=document.getElementById('t-q'); if(qi) qi.addEventListener('input',()=>{ query=qi.value; const pos=qi.selectionStart; renderOpts(); const ni=document.getElementById('t-q'); ni.focus(); ni.setSelectionRange(pos,pos); });
+}
+function renderCats(){
+  document.getElementById('cats').innerHTML=CATS.map(([k,n])=>`<button class="cat" role="tab" data-cat="${k}" aria-selected="${cat===k}">${n}</button>`).join('');
+}
+function syncPanel(){
+  const S=STYLES[cfg.style];
+  document.getElementById('p-mix').textContent=custom()?`${S.name}, customized`:S.name;
+  document.getElementById('p-reset').disabled=!custom();
+  renderOpts();
+}
+document.getElementById('cats').addEventListener('click',e=>{ const b=e.target.closest('.cat'); if(!b) return; cat=b.dataset.cat; query=''; renderCats(); renderOpts(); document.getElementById('opts').scrollTop=0; b.focus(); });
+document.getElementById('opts').addEventListener('click',e=>{ const lk=e.target.closest('.look'); if(lk){ look[cat]=lk.dataset.look; renderOpts(); const nb=document.querySelector(`.look[data-look="${lk.dataset.look}"]`); if(nb) nb.focus({preventScroll:true}); return; }
+  const b=e.target.closest('.card'); if(!b||cfg[b.dataset.k]===b.dataset.v) return;
+  const sx=b.parentNode.scrollLeft; toast(pickName(b.dataset.k,b.dataset.v));
+  cfg[b.dataset.k]=b.dataset.v; const y=document.getElementById('opts').scrollTop; build(); document.getElementById('opts').scrollTop=y;
+  const nb=document.querySelector(`.card[data-k="${b.dataset.k}"][data-v="${b.dataset.v}"]`); if(nb){ nb.parentNode.scrollLeft=sx; nb.focus({preventScroll:true}); } });
+function pickName(k,v){ const n={floor:'Floor',wall:'Walls',shower:'Shower floor',door:'Door',glass:'Glass',handle:'Handle',hw:'Finish'}[k];
+  const val=TILES[v]?TILES[v].line+' '+TILES[v].name:({door:DOORS,glass:GLASS,handle:HANDLES,hw:HW}[k][v]||{}).name; return `${n}: ${val}`; }
+let toastT=0;
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),1800); }
+document.getElementById('p-reset').addEventListener('click',()=>{ Object.assign(cfg,STYLES[cfg.style].picks); build(); });
+function summary(){
+  const S=design();
+  return [`Henry's Improvements bathroom design: ${STYLES[cfg.style].name}${custom()?' (customized)':''}`,
+    `Wall tile: Nemo ${S.wallTile.label}, ${S.wallTile.size}`, `Floor tile: Nemo ${S.floorTile.label}, ${S.floorTile.size}`, `Shower floor: Nemo ${S.accentTile.label}, ${S.accentTile.size}`,
+    ...S.finish.filter(([k])=>k==='Glass'||k==='Fixtures').map(([k,v])=>`${k}: ${v}`)].join('\n');
+}
+document.getElementById('p-copy').addEventListener('click',async e=>{ const b=e.currentTarget, t=summary(); let ok=false;
+  try{ await navigator.clipboard.writeText(t); ok=true; }catch(err){ try{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); ok=document.execCommand('copy'); ta.remove(); }catch(e2){} }
+  b.textContent=ok?'Copied. Paste it in your quote request':'Copy did not work on this browser'; setTimeout(()=>b.textContent='Copy my selections',3200); });
+renderCats();
+
+function resize(){ const w=stage.clientWidth, h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage);
+
+
+
+let start='modern';
+document.querySelectorAll('.style-btn').forEach(x=>x.setAttribute('aria-pressed',x.dataset.style===start));
+Object.assign(cfg,{style:start},STYLES[start].picks); build(); resize(); setView('over',true);
+(function loop(now){ requestAnimationFrame(loop); if(anim) anim(now); controls.update(); renderer.render(scene,camera); })(performance.now());
+})();
+
+</script>
+<script>
+(function(){
+  const stage=document.getElementById('stage'), layer=document.getElementById('plan-layer'), views=document.getElementById('views');
+  const m3=document.getElementById('m-3d'), mp=document.getElementById('m-plan');
+  function mode(plan){ layer.hidden=!plan; views.hidden=plan; m3.setAttribute('aria-pressed',!plan); mp.setAttribute('aria-pressed',plan); post(); }
+  m3.addEventListener('click',()=>mode(false)); mp.addEventListener('click',()=>mode(true));
+  // tell the parent page how tall this is, so the embed never needs its own scrollbar
+  function post(){ try{ parent.postMessage({hiBathDesigner:true,height:document.getElementById('dz').offsetHeight+2},'*'); }catch(e){} }
+  new ResizeObserver(post).observe(document.getElementById('dz'));
+  document.querySelectorAll('.style-btn').forEach(b=>b.addEventListener('click',()=>setTimeout(post,50)));
+  post();
+})();
+</script>
+<script>
+(function(){ const stage=document.getElementById('stage'), ctrl=document.getElementById('ctrl');
+  const mode=stage.querySelector('.mode')||ctrl.querySelector('.mode'), views=document.getElementById('views'), mq=matchMedia('(max-width:600px)');
+  function place(){ if(mq.matches){ if(mode.parentNode!==ctrl){ ctrl.append(mode,views); } } else if(mode.parentNode!==stage){ stage.append(mode,views); } }
+  place(); (mq.addEventListener?mq.addEventListener('change',place):mq.addListener(place)); })();
+</script>
+</body></html>
