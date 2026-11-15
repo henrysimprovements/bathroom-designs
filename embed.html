@@ -9,4 +9,12 @@ noscript a{color:#fff;font:15px system-ui,sans-serif}
 <!-- The live 3D comes from the SketchPermit app (same 3D our team uses on real jobs).
      Old self-contained version kept as embed-classic.html. -->
 <iframe src="https://app.sketchpermit.com/showroom.html?room=bath&amp;pick=0" title="Bathroom in 3D: spin the room and pick colors and finishes" allow="fullscreen" loading="lazy"></iframe>
+<script>
+/* Tell the website how tall this frame should be, so the 3D fits the screen.
+   Computer: a wide 16:10 view. Phone: a taller view. */
+(function(){ var last=0;
+  function fit(){ var w=window.innerWidth||document.documentElement.clientWidth, h=w>=700?Math.round(Math.min(w*0.62,760)):Math.round(Math.max(520,Math.min(w*1.5,640)));
+    if(h!==last){ last=h; try{ parent.postMessage({hiBathDesigner:1,height:h},'*'); }catch(e){} } }
+  fit(); window.addEventListener('resize',fit); window.addEventListener('load',fit); })();
+</script>
 </body></html>
